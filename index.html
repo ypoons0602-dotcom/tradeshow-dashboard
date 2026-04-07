@@ -202,10 +202,11 @@ function Dashboard() {
           <T fontSize="9" fill="#0F6E56" x="680" y="324" textAnchor="middle">{fmt(p.custItems)}</T>
           <T fontSize="9" fill="#0F6E56" x="680" y="336" textAnchor="middle">items</T>
 
-          <rect x="568" y="358" width="168" height="28" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
-          <T fontSize="11" fontWeight="500" fill="#791F1F" x="612" y="376" textAnchor="middle">{fmt(p.none)} txns</T>
-          <line x1="652" y1="362" x2="652" y2="384" stroke="#F09595" strokeWidth="0.5"/>
-          <T fontSize="11" fontWeight="500" fill="#791F1F" x="692" y="376" textAnchor="middle">{fmt(p.noneItems)} items</T>
+          <rect x="568" y="350" width="168" height="44" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+          <T fontSize="11" fontWeight="500" fill="#791F1F" x="652" y="366" textAnchor="middle">No rescan</T>
+          <T fontSize="11" fontWeight="500" fill="#A32D2D" x="612" y="385" textAnchor="middle">{fmt(p.none)} txns</T>
+          <line x1="652" y1="372" x2="652" y2="390" stroke="#F09595" strokeWidth="0.5"/>
+          <T fontSize="11" fontWeight="500" fill="#A32D2D" x="692" y="385" textAnchor="middle">{fmt(p.noneItems)} items</T>
 
           {/* FLOWS col3→col4 */}
           <path d="M736 22 C776 22 776 22 810 22 L810 170 C776 170 776 170 736 170" fill="#F1EFE8" stroke="#D3D1C7" strokeWidth="0.5"/>
