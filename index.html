@@ -258,10 +258,10 @@ function Dashboard() {
       {/* KPI */}
       <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>Key metrics</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 10, marginBottom: 12 }}>
-        <KpiCard cls="r"  lbl="Scan-miss incidents" val={fmt(p.flag)}  sub={pct(p.flag, p.total) + " of " + p.short + " · " + fmt(p.flagItems) + " items"} />
-        <KpiCard cls="a"  lbl="Staff rescan"        val={fmt(p.staff)} sub={pStaff + " of flagged · " + fmt(p.staffItems) + " items"} />
-        <KpiCard cls="gr" lbl="Customer rescan"     val={fmt(p.cust)}  sub={pCust  + " of flagged · " + fmt(p.custItems)  + " items"} />
-        <KpiCard cls="g"  lbl="Revenue recovered"   val={p.rec}        sub={fmt(p.none) + " unresolved · " + p.risk + " at risk"} />
+        <KpiCard cls="r"  lbl="Scan-miss rate"     val={pct(p.flag, p.total)}                          sub={fmt(p.flag) + " txns · " + fmt(p.flagItems) + " items"} />
+        <KpiCard cls="gr" lbl="Rescan rate"       val={pct(p.flag - p.none, p.flag)}                  sub={fmt(p.flag - p.none) + " txns rescanned by staff & customer"} />
+        <KpiCard cls="gr" lbl="Revenue recovered"  val={p.rec}                                          sub={p.short + " · avg $" + (parseInt(p.rec.replace(/[$,]/g,"")) / (p.flag - p.none)).toFixed(2) + " / incident"} />
+        <KpiCard cls="a"  lbl="Revenue at risk"    val={p.risk}                                         sub={fmt(p.none) + " unresolved txns · " + pNone + " of flagged"} />
       </div>
 
       {/* Footer */}
