@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCO Vision AI — Scan Integrity Dashboard</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f0ede8; min-height: 100vh; display: flex; justify-content: center; padding: 24px 16px; }
+  #root { width: 100%; max-width: 1100px; }
+  select { font-family: inherit; }
+  button { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const STORES = {
+  s1: { name: "Store Alpha — District A", sco: 4, txn: "1,240", items: "4,650", sales: "$18,400" },
+  s2: { name: "Store Beta — District B",  sco: 6, txn: "1,880", items: "6,920", sales: "$27,100" },
+  s3: { name: "Store Gamma — District C", sco: 3, txn: "890",   items: "3,280", sales: "$13,600" },
+};
+
+const PERIODS = {
+  q1: { label: "Jan 1 – Mar 31, 2025 · Q1 2025", short: "Q1 2025",
+        total: 113840, normal: 110185, flag: 3655, flagItems: 10840,
+        staff: 1758, staffItems: 5210, cust: 1166, custItems: 3470,
+        none: 731, noneItems: 2160, rec: "$42,680", risk: "$10,672", recTxns: 2924, recItems: 8680 },
+  q2: { label: "Apr 1 – Jun 30, 2025 · Q2 2025", short: "Q2 2025",
+        total: 118400, normal: 114460, flag: 3940, flagItems: 11820,
+        staff: 1930, staffItems: 5740, cust: 1240, custItems: 3680,
+        none: 770, noneItems: 2400, rec: "$46,200", risk: "$11,340", recTxns: 3170, recItems: 9420 },
+  q3: { label: "Jul 1 – Sep 30, 2025 · Q3 2025", short: "Q3 2025",
+        total: 121600, normal: 117540, flag: 4060, flagItems: 12180,
+        staff: 1980, staffItems: 5900, cust: 1310, custItems: 3890,
+        none: 770, noneItems: 2390, rec: "$48,720", risk: "$11,550", recTxns: 3290, recItems: 9790 },
+  q4: { label: "Oct 1 – Dec 31, 2024 · Q4 2024", short: "Q4 2024",
+        total: 109200, normal: 105540, flag: 3660, flagItems: 10980,
+        staff: 1740, staffItems: 5180, cust: 1160, custItems: 3440,
+        none: 760, noneItems: 2360, rec: "$41,280", risk: "$10,830", recTxns: 2900, recItems: 8620 },
+};
+
+const fmt = n => n.toLocaleString();
+const pct = (a, b) => (a / b * 100).toFixed(1) + "%";
+
+const T = ({ children, ...p }) => (
+  <text fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" {...p}>{children}</text>
+);
+
+const KpiCard = ({ cls, lbl, val, sub }) => {
+  const colors = {
+    r:  { bg: "#FCEBEB", border: "#F7C1C1", lbl: "#A32D2D", val: "#A32D2D", sub: "#A32D2D" },
+    a:  { bg: "#FAEEDA", border: "#FAC775", lbl: "#854F0B", val: "#854F0B", sub: "#854F0B" },
+    gr: { bg: "#EAF3DE", border: "#C0DD97", lbl: "#3B6D11", val: "#3B6D11", sub: "#3B6D11" },
+    g:  { bg: "#f5f4f0", border: "rgba(0,0,0,0.12)", lbl: "#888780", val: "#1a1a18", sub: "#888780" },
+  }[cls];
+  return (
+    <div style={{ borderRadius: 8, padding: "12px 14px", border: `0.5px solid ${colors.border}`, background: colors.bg }}>
+      <div style={{ fontSize: 11, color: colors.lbl, marginBottom: 3 }}>{lbl}</div>
+      <div style={{ fontSize: 20, fontWeight: 500, color: colors.val }}>{val}</div>
+      <div style={{ fontSize: 11, color: colors.sub, marginTop: 2 }}>{sub}</div>
+    </div>
+  );
+};
+
+const LegDot = ({ color, label }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#5f5e5a" }}>
+    <div style={{ width: 10, height: 10, borderRadius: 2, background: color, flexShrink: 0 }} />
+    {label}
+  </div>
+);
+
+function Dashboard() {
+  const [sk, setSk] = useState("s1");
+  const [pk, setPk] = useState("q1");
+  const s = STORES[sk], p = PERIODS[pk];
+  const pStaff = pct(p.staff, p.flag);
+  const pCust  = pct(p.cust,  p.flag);
+  const pNone  = pct(p.none,  p.flag);
+  const annualRec = "$" + (parseInt(p.rec.replace(/[$,]/g, "")) * 4).toLocaleString() + "+";
+
+  return (
+    <div style={{ background: "#fff", borderRadius: 16, padding: "22px 26px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+
+      {/* Filter bar */}
+      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 11, color: "#888780" }}>Time period</span>
+          <select value={pk} onChange={e => setPk(e.target.value)}
+            style={{ fontSize: 12, padding: "5px 10px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#1a1a18", cursor: "pointer" }}>
+            <option value="q1">Q1 2025 (Jan – Mar)</option>
+            <option value="q2">Q2 2025 (Apr – Jun)</option>
+            <option value="q3">Q3 2025 (Jul – Sep)</option>
+            <option value="q4">Q4 2024 (Oct – Dec)</option>
+          </select>
+        </div>
+        <div style={{ width: 0.5, height: 20, background: "rgba(0,0,0,0.12)" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 11, color: "#888780" }}>Store</span>
+          <select value={sk} onChange={e => setSk(e.target.value)}
+            style={{ fontSize: 12, padding: "5px 10px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#1a1a18", cursor: "pointer" }}>
+            <option value="s1">Store Alpha — District A</option>
+            <option value="s2">Store Beta — District B</option>
+            <option value="s3">Store Gamma — District C</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Top bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, gap: 16 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {[["SCO lanes", s.sco + " units"], ["Daily transactions", s.txn + " txns"], ["Daily items scanned", s.items + " items"], ["Daily total sales", s.sales]].map(([l, v]) => (
+            <div key={l} style={{ background: "#f5f4f0", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "7px 14px" }}>
+              <div style={{ fontSize: 11, color: "#888780", marginBottom: 2 }}>{l}</div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: "#1a1a18" }}>{v}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 500, color: "#1a1a18" }}>{s.name}</div>
+          <div style={{ fontSize: 11, color: "#888780", marginTop: 2 }}>{p.label}</div>
+          <button style={{ marginTop: 6, fontSize: 11, padding: "4px 11px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#888780", cursor: "pointer" }}>
+            Export report ↓
+          </button>
+        </div>
+      </div>
+
+      {/* Sankey section label */}
+      <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
+        Transaction integrity flow — AI scan miss detection
+      </div>
+
+      {/* Sankey */}
+      <div style={{ background: "#fff", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: "14px 16px 10px", marginBottom: 12 }}>
+        <svg width="100%" viewBox="0 0 900 340" style={{ display: "block" }}>
+          <path d="M142 22 C204 22 204 22 268 22 L268 156 C204 156 204 148 142 148" fill="#F1EFE8" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <path d="M444 22 C506 22 506 22 568 22 L568 148 C506 148 506 148 444 148" fill="#F1EFE8" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <path d="M736 22 C776 22 776 22 810 22 L810 140 C776 140 776 140 736 140" fill="#F1EFE8" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <path d="M142 162 C204 162 204 174 268 174 L268 326 C204 326 204 314 142 230" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+
+          {/* COL 1 */}
+          <rect x="14" y="14" width="128" height="220" rx="8" fill="#F8F7F4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="12" fill="#888780" x="78" y="52" textAnchor="middle">Total SCO</T>
+          <T fontSize="12" fill="#888780" x="78" y="67" textAnchor="middle">transactions</T>
+          <T fontSize="20" fontWeight="500" fill="#5F5E5A" x="78" y="104" textAnchor="middle">{fmt(p.total)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="78" y="119" textAnchor="middle">{p.short} total</T>
+          <line x1="26" y1="148" x2="130" y2="148" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="10" fill="#B4B2A9" x="78" y="168" textAnchor="middle">AI flagged flow</T>
+          <T fontSize="10" fill="#B4B2A9" x="78" y="182" textAnchor="middle">see ② →</T>
+
+          {/* COL 2 */}
+          <rect x="268" y="14" width="176" height="142" rx="8" fill="#F8F7F4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="12" fill="#888780" x="356" y="48" textAnchor="middle">Normal transactions</T>
+          <T fontSize="18" fontWeight="500" fill="#888780" x="356" y="84" textAnchor="middle">{fmt(p.normal)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="356" y="99" textAnchor="middle">{pct(p.normal, p.total)} · no action needed</T>
+
+          <rect x="268" y="170" width="176" height="78" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="2"/>
+          <T fontSize="12" fontWeight="500" fill="#791F1F" x="356" y="191" textAnchor="middle">AI-flagged scan miss</T>
+          <T fontSize="16" fontWeight="500" fill="#A32D2D" x="328" y="216" textAnchor="middle">{fmt(p.flag)}</T>
+          <line x1="356" y1="204" x2="356" y2="230" stroke="#F09595" strokeWidth="0.5"/>
+          <T fontSize="9" fill="#A32D2D" x="328" y="228" textAnchor="middle">txns</T>
+          <T fontSize="9" fill="#A32D2D" x="384" y="216" textAnchor="middle">{fmt(p.flagItems)}</T>
+          <T fontSize="9" fill="#A32D2D" x="384" y="228" textAnchor="middle">items</T>
+          <rect x="304" y="234" width="104" height="16" rx="4" fill="#FCEBEB" stroke="#F09595" strokeWidth="0.5"/>
+          <T fontSize="10" fontWeight="500" fill="#A32D2D" x="356" y="245" textAnchor="middle">{pct(p.flag, p.total)} of total</T>
+
+          {/* THREE FLOWS col2→col3 */}
+          <path d="M444 184 C506 184 506 190 568 190 L568 238 C506 238 506 232 444 220" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
+          <path d="M444 228 C506 228 506 246 568 252 L568 294 C506 294 506 280 444 246" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
+          <path d="M444 254 C506 254 506 304 568 308 L568 332 C506 332 506 318 444 266" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+          <T fontSize="9" fontWeight="500" fill="#854F0B" x="506" y="206" textAnchor="middle">{pStaff}</T>
+          <T fontSize="9" fontWeight="500" fill="#0F6E56" x="506" y="254" textAnchor="middle">{pCust}</T>
+          <T fontSize="9" fontWeight="500" fill="#A32D2D" x="506" y="294" textAnchor="middle">{pNone}</T>
+
+          {/* COL 3 */}
+          <rect x="568" y="14" width="168" height="142" rx="8" fill="#F8F7F4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="12" fill="#888780" x="652" y="48" textAnchor="middle">No action needed</T>
+          <T fontSize="18" fontWeight="500" fill="#888780" x="652" y="84" textAnchor="middle">{fmt(p.normal)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="652" y="100" textAnchor="middle">transactions resolved</T>
+
+          <rect x="568" y="170" width="168" height="62" rx="8" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="2"/>
+          <T fontSize="12" fontWeight="500" fill="#633806" x="652" y="190" textAnchor="middle">Staff rescan</T>
+          <T fontSize="15" fontWeight="500" fill="#854F0B" x="624" y="214" textAnchor="middle">{fmt(p.staff)}</T>
+          <line x1="652" y1="203" x2="652" y2="224" stroke="#FAC775" strokeWidth="0.5"/>
+          <T fontSize="9" fill="#854F0B" x="624" y="226" textAnchor="middle">txns</T>
+          <T fontSize="9" fill="#854F0B" x="680" y="214" textAnchor="middle">{fmt(p.staffItems)}</T>
+          <T fontSize="9" fill="#854F0B" x="680" y="226" textAnchor="middle">items</T>
+
+          <rect x="568" y="242" width="168" height="62" rx="8" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="2"/>
+          <T fontSize="12" fontWeight="500" fill="#085041" x="652" y="262" textAnchor="middle">Customer rescan</T>
+          <T fontSize="15" fontWeight="500" fill="#0F6E56" x="624" y="286" textAnchor="middle">{fmt(p.cust)}</T>
+          <line x1="652" y1="275" x2="652" y2="296" stroke="#9FE1CB" strokeWidth="0.5"/>
+          <T fontSize="9" fill="#0F6E56" x="624" y="298" textAnchor="middle">txns</T>
+          <T fontSize="9" fill="#0F6E56" x="680" y="286" textAnchor="middle">{fmt(p.custItems)}</T>
+          <T fontSize="9" fill="#0F6E56" x="680" y="298" textAnchor="middle">items</T>
+
+          <rect x="568" y="314" width="168" height="24" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+          <T fontSize="11" fontWeight="500" fill="#791F1F" x="612" y="330" textAnchor="middle">{fmt(p.none)} txns</T>
+          <line x1="652" y1="318" x2="652" y2="336" stroke="#F09595" strokeWidth="0.5"/>
+          <T fontSize="11" fontWeight="500" fill="#791F1F" x="692" y="330" textAnchor="middle">{fmt(p.noneItems)} items</T>
+
+          {/* FLOWS col3→col4 */}
+          <path d="M736 22 C776 22 776 22 810 22 L810 140 C776 140 776 140 736 140" fill="#F1EFE8" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <path d="M736 186 C776 186 776 210 810 210 L810 292 C776 292 776 268 736 298" fill="#EAF3DE" stroke="#97C459" strokeWidth="1.5"/>
+          <path d="M736 326 C776 326 776 312 810 312 L810 328 C776 328 776 338 736 338" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+
+          {/* COL 4 */}
+          <rect x="810" y="14" width="76" height="142" rx="6" fill="#F8F7F4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="10" fill="#B4B2A9" x="848" y="80" textAnchor="middle">$0 loss</T>
+          <T fontSize="10" fill="#B4B2A9" x="848" y="95" textAnchor="middle">{fmt(p.normal)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="848" y="108" textAnchor="middle">txns</T>
+
+          <rect x="810" y="170" width="76" height="130" rx="6" fill="#EAF3DE" stroke="#639922" strokeWidth="2"/>
+          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="192" textAnchor="middle">AI</T>
+          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="206" textAnchor="middle">recovered</T>
+          <T fontSize="14" fontWeight="500" fill="#3B6D11" x="848" y="230" textAnchor="middle">{p.rec}</T>
+          <T fontSize="9" fill="#639922" x="848" y="245" textAnchor="middle">staff + customer</T>
+          <T fontSize="9" fill="#639922" x="848" y="258" textAnchor="middle">{fmt(p.recTxns)} txns</T>
+          <T fontSize="9" fill="#639922" x="848" y="271" textAnchor="middle">{fmt(p.recItems)} items</T>
+
+          <rect x="810" y="308" width="76" height="32" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+          <T fontSize="10" fontWeight="500" fill="#791F1F" x="848" y="322" textAnchor="middle">At risk</T>
+          <T fontSize="10" fill="#791F1F" x="848" y="335" textAnchor="middle">{p.risk}</T>
+
+          {[["① Volume", 78], ["② AI detection", 356], ["③ Response", 652], ["④ $", 848]].map(([l, x]) => (
+            <T key={l} fontSize="11" fill="#5F5E5A" x={x} y="330" textAnchor="middle">{l}</T>
+          ))}
+        </svg>
+      </div>
+
+      {/* Insights */}
+      <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>AI insights</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+        <div style={{ borderRadius: 8, padding: "12px 14px", borderLeft: "3px solid #639922", background: "#EAF3DE" }}>
+          <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#3B6D11", marginBottom: 5 }}>What AI recovered</div>
+          <div style={{ fontSize: 12, lineHeight: 1.6, color: "#27500A" }}>
+            Staff and customer rescans together recovered <strong>{p.rec}</strong> in {p.short} — across <strong>{fmt(p.recTxns)} transactions</strong> and {fmt(p.recItems)} items flagged by AI. That's revenue that would otherwise have walked out the door undetected.
+          </div>
+        </div>
+        <div style={{ borderRadius: 8, padding: "12px 14px", borderLeft: "3px solid #BA7517", background: "#FAEEDA" }}>
+          <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#854F0B", marginBottom: 5 }}>Opportunity ahead</div>
+          <div style={{ fontSize: 12, lineHeight: 1.6, color: "#633806" }}>
+            <strong>{pNone} of flagged transactions</strong> ({fmt(p.none)} txns) had no follow-up action. Closing this gap could unlock an estimated <strong>{annualRec} in additional annual recovery</strong> for this store — without adding any new hardware.
+          </div>
+        </div>
+      </div>
+
+      {/* KPI */}
+      <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>Key metrics</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 10, marginBottom: 12 }}>
+        <KpiCard cls="r"  lbl="Scan-miss incidents" val={fmt(p.flag)}  sub={pct(p.flag, p.total) + " of " + p.short + " · " + fmt(p.flagItems) + " items"} />
+        <KpiCard cls="a"  lbl="Staff rescan"        val={fmt(p.staff)} sub={pStaff + " of flagged · " + fmt(p.staffItems) + " items"} />
+        <KpiCard cls="gr" lbl="Customer rescan"     val={fmt(p.cust)}  sub={pCust  + " of flagged · " + fmt(p.custItems)  + " items"} />
+        <KpiCard cls="g"  lbl="Revenue recovered"   val={p.rec}        sub={fmt(p.none) + " unresolved · " + p.risk + " at risk"} />
+      </div>
+
+      {/* Footer */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "0.5px solid rgba(0,0,0,0.1)", paddingTop: 8 }}>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          {[["#888780","Normal flow"],["#A32D2D","AI-flagged"],["#854F0B","Staff rescan"],["#0F6E56","Customer rescan"],["#3B6D11","AI recovered"]].map(([c, l]) => (
+            <LegDot key={l} color={c} label={l} />
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: "#888780", whiteSpace: "nowrap" }}>Powered by <strong>Vision AI</strong> · {p.short}</div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<Dashboard />);
+</script>
+</body>
+</html>
