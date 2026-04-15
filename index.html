@@ -87,7 +87,6 @@ function Dashboard() {
   return (
     <div style={{ background: "#fff", borderRadius: 16, padding: "22px 26px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
 
-      {/* Filter bar */}
       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 11, color: "#888780" }}>Time period</span>
@@ -111,7 +110,6 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Top bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, gap: 16 }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {[["SCO lanes", s.sco + " units"], ["Daily transactions", s.txn + " txns"], ["Daily items scanned", s.items + " items"], ["Daily total sales", s.sales]].map(([l, v]) => (
@@ -130,130 +128,96 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Sankey section label */}
       <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
         Transaction integrity flow — AI scan miss detection
       </div>
 
-
       <div style={{ background: "#fff", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: "14px 16px 10px", marginBottom: 12 }}>
-        <svg width="100%" viewBox="0 0 900 430" style={{ display: "block" }}>
+        <svg width="100%" viewBox="0 0 900 400" style={{ display: "block" }}>
 
+          <path d="M142 240 C204 240 204 240 268 240 L268 290 C204 290 204 290 142 290" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
 
-          {/* ── DRAW ORDER: normal (faint) first so flagged sits on top ── */}
+          <path d="M142 14 C204 14 204 14 268 14 L268 110 C204 110 204 96 142 96 Z" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
 
-          {/* CHANGE 1: Normal stream moved BELOW flagged — slim, very faint */}
-          <path d="M142 290 C204 290 204 290 268 290 L268 308 C204 308 204 308 142 308" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <path d="M444 290 C506 290 506 290 568 290 L568 308 C506 308 506 308 444 308" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <path d="M736 290 C776 290 776 290 810 290 L810 308 C776 308 776 308 736 308" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <rect x="14" y="14" width="128" height="300" rx="8" fill="#F8F7F4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="12" fill="#888780" x="78" y="50" textAnchor="middle">Total SCO</T>
+          <T fontSize="12" fill="#888780" x="78" y="65" textAnchor="middle">transactions</T>
+          <T fontSize="20" fontWeight="500" fill="#5F5E5A" x="78" y="104" textAnchor="middle">{fmt(p.total)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="78" y="120" textAnchor="middle">{p.short} total</T>
+          <line x1="26" y1="148" x2="130" y2="148" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="10" fill="#C4C2BB" x="78" y="168" textAnchor="middle">{pct(p.normal, p.total)} completed</T>
+          <T fontSize="10" fill="#C4C2BB" x="78" y="182" textAnchor="middle">normally</T>
 
-          {/* CHANGE 1 cont: Flagged stream col1→col2 TOP — bottom aligned to card bottom y=114 */}
-          {/* CHANGE 5: red flow bottom = card bottom (y=114), no overflow */}
-          <path d="M142 14 C204 14 204 14 268 14 L268 114 C204 114 204 100 142 100 Z" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
-
-          {/* COL 1 */}
-          <rect x="14" y="14" width="128" height="310" rx="8" fill="#F8F7F4" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="12" fill="#888780" x="78" y="52" textAnchor="middle">Total SCO</T>
-          <T fontSize="12" fill="#888780" x="78" y="67" textAnchor="middle">transactions</T>
-          <T fontSize="20" fontWeight="500" fill="#5F5E5A" x="78" y="106" textAnchor="middle">{fmt(p.total)}</T>
-          <T fontSize="10" fill="#B4B2A9" x="78" y="121" textAnchor="middle">{p.short} total</T>
-          <line x1="26" y1="150" x2="130" y2="150" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="10" fill="#B4B2A9" x="78" y="168" textAnchor="middle">AI flagged flow</T>
-          <T fontSize="10" fill="#B4B2A9" x="78" y="182" textAnchor="middle">see ② →</T>
-
-          {/* COL 2 — AI-flagged card TOP (y=14..114), Normal faint strip bottom */}
-          {/* CHANGE 5: card height = 100, y=14..114 */}
           <rect x="268" y="14" width="176" height="100" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="2"/>
-          <T fontSize="12" fontWeight="500" fill="#791F1F" x="356" y="38" textAnchor="middle">AI-flagged scan miss</T>
-          <T fontSize="16" fontWeight="500" fill="#A32D2D" x="318" y="66" textAnchor="middle">{fmt(p.flag)}</T>
-          <line x1="348" y1="54" x2="348" y2="78" stroke="#F09595" strokeWidth="0.5"/>
-          <T fontSize="9" fill="#A32D2D" x="318" y="78" textAnchor="middle">txns</T>
-          <T fontSize="9" fill="#A32D2D" x="380" y="66" textAnchor="middle">{fmt(p.flagItems)}</T>
-          <T fontSize="9" fill="#A32D2D" x="380" y="78" textAnchor="middle">items</T>
-          {/* CHANGE 2: badge left-aligned under txns (x=270) not centered */}
+          <T fontSize="12" fontWeight="500" fill="#791F1F" x="356" y="36" textAnchor="middle">AI-flagged scan miss</T>
+          <T fontSize="16" fontWeight="500" fill="#A32D2D" x="316" y="64" textAnchor="middle">{fmt(p.flag)}</T>
+          <line x1="346" y1="52" x2="346" y2="76" stroke="#F09595" strokeWidth="0.5"/>
+          <T fontSize="10" fill="#A32D2D" x="316" y="76" textAnchor="middle">txns</T>
+          <T fontSize="11" fill="#D4AEAE" x="378" y="62" textAnchor="middle">{fmt(p.flagItems)}</T>
+          <T fontSize="10" fill="#D4AEAE" x="378" y="76" textAnchor="middle">items</T>
           <rect x="270" y="84" width="84" height="16" rx="4" fill="#FCEBEB" stroke="#F09595" strokeWidth="0.5"/>
           <T fontSize="10" fontWeight="500" fill="#A32D2D" x="312" y="95" textAnchor="middle">{pct(p.flag, p.total)} of total</T>
 
-          {/* Normal faint strip col2 */}
-          <rect x="268" y="286" width="176" height="26" rx="6" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="10" fill="#C4C2BB" x="356" y="303" textAnchor="middle">Normal · {fmt(p.normal)} txns · no action needed</T>
+          <rect x="268" y="236" width="176" height="58" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="11" fill="#888780" x="356" y="258" textAnchor="middle">Normal transactions</T>
+          <T fontSize="15" fontWeight="500" fill="#888780" x="356" y="280" textAnchor="middle">{fmt(p.normal)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="356" y="293" textAnchor="middle">{pct(p.normal, p.total)} · no action needed</T>
 
-          {/* THREE FLOWS col2→col3: all leave from AI-flagged card right edge (x=444, y=14..114) */}
-          <path d="M444 20 C510 20 510 24 568 24 L568 76 C510 76 510 54 444 54" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
-          <path d="M444 58 C510 58 510 98 568 100 L568 156 C510 156 510 90 444 90" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
-          <path d="M444 94 C510 94 510 178 568 180 L568 216 C510 216 510 108 444 108" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+          <path d="M444 20 C510 20 510 26 568 26 L568 78 C510 78 510 56 444 54" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
+          <path d="M444 58 C510 58 510 102 568 104 L568 160 C510 160 510 92 444 90" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
+          <path d="M444 94 C510 94 510 180 568 182 L568 222 C510 222 510 110 444 108" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
 
-          {/* % labels on flows */}
-          <T fontSize="9" fontWeight="500" fill="#854F0B" x="506" y="38" textAnchor="middle">{pStaff}</T>
-          <T fontSize="9" fontWeight="500" fill="#0F6E56" x="506" y="114" textAnchor="middle">{pCust}</T>
-          <T fontSize="9" fontWeight="500" fill="#A32D2D" x="506" y="178" textAnchor="middle">{pNone}</T>
+          <rect x="568" y="14" width="168" height="76" rx="8" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="2"/>
+          <T fontSize="11" fontWeight="500" fill="#633806" x="652" y="32" textAnchor="middle">Staff rescan</T>
+          <T fontSize="10" fill="#854F0B" x="652" y="46" textAnchor="middle">{pStaff} of flagged txns</T>
+          <T fontSize="15" fontWeight="500" fill="#854F0B" x="614" y="68" textAnchor="middle">{fmt(p.staff)}</T>
+          <T fontSize="10" fill="#854F0B" x="614" y="80" textAnchor="middle">txns</T>
+          <T fontSize="11" fill="#D4BA8A" x="690" y="68" textAnchor="middle">{fmt(p.staffItems)}</T>
+          <T fontSize="10" fill="#D4BA8A" x="690" y="80" textAnchor="middle">items</T>
 
-          {/* COL 3 — flagged nodes top, normal faint strip bottom */}
-          {/* Staff rescan y=14..82 */}
-          <rect x="568" y="14" width="168" height="68" rx="8" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="2"/>
-          <T fontSize="12" fontWeight="500" fill="#633806" x="652" y="34" textAnchor="middle">Staff rescan</T>
-          <T fontSize="15" fontWeight="500" fill="#854F0B" x="624" y="60" textAnchor="middle">{fmt(p.staff)}</T>
-          <line x1="652" y1="48" x2="652" y2="70" stroke="#FAC775" strokeWidth="0.5"/>
-          <T fontSize="9" fill="#854F0B" x="624" y="72" textAnchor="middle">txns</T>
-          <T fontSize="9" fill="#854F0B" x="680" y="60" textAnchor="middle">{fmt(p.staffItems)}</T>
-          <T fontSize="9" fill="#854F0B" x="680" y="72" textAnchor="middle">items</T>
+          <rect x="568" y="102" width="168" height="76" rx="8" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="2"/>
+          <T fontSize="11" fontWeight="500" fill="#085041" x="652" y="120" textAnchor="middle">Customer rescan</T>
+          <T fontSize="10" fill="#0F6E56" x="652" y="134" textAnchor="middle">{pCust} of flagged txns</T>
+          <T fontSize="15" fontWeight="500" fill="#0F6E56" x="614" y="156" textAnchor="middle">{fmt(p.cust)}</T>
+          <T fontSize="10" fill="#0F6E56" x="614" y="168" textAnchor="middle">txns</T>
+          <T fontSize="11" fill="#8AC4B4" x="690" y="156" textAnchor="middle">{fmt(p.custItems)}</T>
+          <T fontSize="10" fill="#8AC4B4" x="690" y="168" textAnchor="middle">items</T>
 
-          {/* Customer rescan y=94..162 */}
-          <rect x="568" y="94" width="168" height="68" rx="8" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="2"/>
-          <T fontSize="12" fontWeight="500" fill="#085041" x="652" y="114" textAnchor="middle">Customer rescan</T>
-          <T fontSize="15" fontWeight="500" fill="#0F6E56" x="624" y="140" textAnchor="middle">{fmt(p.cust)}</T>
-          <line x1="652" y1="128" x2="652" y2="150" stroke="#9FE1CB" strokeWidth="0.5"/>
-          <T fontSize="9" fill="#0F6E56" x="624" y="152" textAnchor="middle">txns</T>
-          <T fontSize="9" fill="#0F6E56" x="680" y="140" textAnchor="middle">{fmt(p.custItems)}</T>
-          <T fontSize="9" fill="#0F6E56" x="680" y="152" textAnchor="middle">items</T>
+          <rect x="568" y="190" width="168" height="60" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+          <T fontSize="11" fontWeight="500" fill="#791F1F" x="652" y="208" textAnchor="middle">No intervention</T>
+          <T fontSize="10" fill="#A32D2D" x="652" y="222" textAnchor="middle">{pNone} of flagged txns</T>
+          <T fontSize="13" fontWeight="500" fill="#A32D2D" x="614" y="242" textAnchor="middle">{fmt(p.none)}</T>
+          <T fontSize="10" fill="#A32D2D" x="614" y="252" textAnchor="middle">txns</T>
+          <T fontSize="11" fill="#D4AEAE" x="690" y="242" textAnchor="middle">{fmt(p.noneItems)}</T>
+          <T fontSize="10" fill="#D4AEAE" x="690" y="252" textAnchor="middle">items</T>
 
-          {/* CHANGE 3: No intervention y=174..222 */}
-          <rect x="568" y="174" width="168" height="48" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
-          <T fontSize="11" fontWeight="500" fill="#791F1F" x="652" y="194" textAnchor="middle">No intervention</T>
-          <T fontSize="11" fontWeight="500" fill="#A32D2D" x="616" y="213" textAnchor="middle">{fmt(p.none)} txns</T>
-          <line x1="652" y1="200" x2="652" y2="220" stroke="#F09595" strokeWidth="0.5"/>
-          <T fontSize="11" fontWeight="500" fill="#A32D2D" x="690" y="213" textAnchor="middle">{fmt(p.noneItems)} items</T>
+          <path d="M736 18 C776 18 776 22 810 22 L810 162 C776 162 776 154 736 148" fill="#EAF3DE" stroke="#97C459" strokeWidth="1.5"/>
+          <path d="M736 196 C776 196 776 188 810 188 L810 222 C776 222 776 226 736 242" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
 
-          {/* Normal faint strip col3 */}
-          <rect x="568" y="286" width="168" height="26" rx="6" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="10" fill="#C4C2BB" x="652" y="303" textAnchor="middle">Normal · {fmt(p.normal)} · no action</T>
+          <rect x="810" y="14" width="76" height="162" rx="6" fill="#EAF3DE" stroke="#639922" strokeWidth="2"/>
+          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="34" textAnchor="middle">Recovered</T>
+          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="48" textAnchor="middle">revenue</T>
+          <T fontSize="13" fontWeight="500" fill="#3B6D11" x="848" y="72" textAnchor="middle">{p.rec}</T>
+          <T fontSize="9" fill="#639922" x="848" y="88" textAnchor="middle">staff + customer rescan</T>
+          <T fontSize="13" fontWeight="500" fill="#3B6D11" x="828" y="114" textAnchor="middle">{fmt(p.recTxns)}</T>
+          <T fontSize="10" fill="#639922" x="828" y="126" textAnchor="middle">txns</T>
+          <T fontSize="11" fill="#97C459" x="864" y="114" textAnchor="middle">{fmt(p.recItems)}</T>
+          <T fontSize="10" fill="#97C459" x="864" y="126" textAnchor="middle">items</T>
 
-          {/* FLOWS col3→col4 */}
-          {/* Recovered: staff+customer → col4 green */}
-          <path d="M736 14 C776 14 776 18 810 18 L810 156 C776 156 776 148 736 156" fill="#EAF3DE" stroke="#97C459" strokeWidth="1.5"/>
-          {/* At risk: no intervention → col4 red */}
-          <path d="M736 180 C776 180 776 172 810 172 L810 200 C776 200 776 204 736 216" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
-          {/* Normal faint col3→col4 */}
-          <path d="M736 290 C776 290 776 290 810 290 L810 308 C776 308 776 308 736 308" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <rect x="810" y="184" width="76" height="66" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+          <T fontSize="10" fontWeight="500" fill="#791F1F" x="848" y="202" textAnchor="middle">At risk</T>
+          <T fontSize="12" fontWeight="500" fill="#A32D2D" x="848" y="220" textAnchor="middle">{p.risk}</T>
+          <T fontSize="11" fontWeight="500" fill="#A32D2D" x="828" y="238" textAnchor="middle">{fmt(p.none)}</T>
+          <T fontSize="10" fill="#A32D2D" x="828" y="248" textAnchor="middle">txns</T>
+          <T fontSize="10" fill="#D4AEAE" x="864" y="238" textAnchor="middle">{fmt(p.noneItems)}</T>
+          <T fontSize="10" fill="#D4AEAE" x="864" y="248" textAnchor="middle">items</T>
 
-          {/* COL 4 */}
-          {/* CHANGE 4: "Recovered revenue" + "staff + customer rescan" subtitle */}
-          <rect x="810" y="14" width="76" height="150" rx="6" fill="#EAF3DE" stroke="#639922" strokeWidth="2"/>
-          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="36" textAnchor="middle">Recovered</T>
-          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="50" textAnchor="middle">revenue</T>
-          <T fontSize="13" fontWeight="500" fill="#3B6D11" x="848" y="76" textAnchor="middle">{p.rec}</T>
-          <T fontSize="9" fill="#639922" x="848" y="92" textAnchor="middle">staff + customer</T>
-          <T fontSize="9" fill="#639922" x="848" y="105" textAnchor="middle">rescan</T>
-          <T fontSize="9" fill="#639922" x="848" y="118" textAnchor="middle">{fmt(p.recTxns)} txns</T>
-          <T fontSize="9" fill="#639922" x="848" y="131" textAnchor="middle">{fmt(p.recItems)} items</T>
-
-          {/* At risk */}
-          <rect x="810" y="172" width="76" height="42" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
-          <T fontSize="10" fontWeight="500" fill="#791F1F" x="848" y="189" textAnchor="middle">At risk</T>
-          <T fontSize="10" fill="#791F1F" x="848" y="204" textAnchor="middle">{p.risk}</T>
-
-          {/* $0 loss faint */}
-          <rect x="810" y="282" width="76" height="30" rx="6" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="9" fill="#C4C2BB" x="848" y="301" textAnchor="middle">$0 loss</T>
-
-          {/* Stage labels */}
           {[["① Volume", 78], ["② AI detection", 356], ["③ Response", 652], ["④ $", 848]].map(([l, x]) => (
-            <T key={l} fontSize="11" fill="#5F5E5A" x={x} y="370" textAnchor="middle">{l}</T>
+            <T key={l} fontSize="11" fill="#5F5E5A" x={x} y="388" textAnchor="middle">{l}</T>
           ))}
         </svg>
       </div>
 
-      {/* Insights */}
       <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>AI insights</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
         <div style={{ borderRadius: 8, padding: "12px 14px", borderLeft: "3px solid #639922", background: "#EAF3DE" }}>
@@ -270,16 +234,14 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* KPI */}
       <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>Key metrics</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 10, marginBottom: 12 }}>
-        <KpiCard cls="r"  lbl="Scan-miss rate"    val={pct(p.flag, p.total)}               sub={fmt(p.flag) + " txns · " + fmt(p.flagItems) + " items"} />
-        <KpiCard cls="gr" lbl="Rescan rate"        val={pct(p.flag - p.none, p.flag)}       sub={fmt(p.flag - p.none) + " txns rescanned by staff & customer"} />
-        <KpiCard cls="gr" lbl="Revenue recovered"  val={p.rec}                              sub={p.short + " · avg $" + (parseInt(p.rec.replace(/[$,]/g,"")) / (p.flag - p.none)).toFixed(2) + " / incident"} />
-        <KpiCard cls="a"  lbl="Revenue at risk"    val={p.risk}                             sub={fmt(p.none) + " unresolved txns · " + pNone + " of flagged"} />
+        <KpiCard cls="r"  lbl="Scan-miss rate"    val={pct(p.flag, p.total)}             sub={fmt(p.flag) + " txns · " + fmt(p.flagItems) + " items"} />
+        <KpiCard cls="gr" lbl="Rescan rate"        val={pct(p.flag - p.none, p.flag)}     sub={fmt(p.flag - p.none) + " txns rescanned by staff & customer"} />
+        <KpiCard cls="gr" lbl="Revenue recovered"  val={p.rec}                            sub={p.short + " · avg $" + (parseInt(p.rec.replace(/[$,]/g,"")) / (p.flag - p.none)).toFixed(2) + " / incident"} />
+        <KpiCard cls="a"  lbl="Revenue at risk"    val={p.risk}                           sub={fmt(p.none) + " unresolved txns · " + pNone + " of flagged"} />
       </div>
 
-      {/* Footer */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "0.5px solid rgba(0,0,0,0.1)", paddingTop: 8 }}>
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
           {[["#C4C2BB","Normal flow"],["#A32D2D","AI-flagged"],["#854F0B","Staff rescan"],["#0F6E56","Customer rescan"],["#3B6D11","Recovered revenue"]].map(([c, l]) => (
