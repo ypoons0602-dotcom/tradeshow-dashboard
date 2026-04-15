@@ -83,6 +83,19 @@ function Dashboard() {
   const pNone  = pct(p.none,  p.flag);
   const annualRec = "$" + (parseInt(p.rec.replace(/[$,]/g, "")) * 4).toLocaleString() + "+";
 
+  // Layout constants
+  // col1: x=14..142, card y=26..212 (h=186) — bottom aligns with AI-flagged bottom (y=26+160=186, +26=212)
+  // col2 AI-flagged: y=26, h=160, bottom=186
+  // col2 Normal: y=198, h=80, bottom=278 — sits just below AI-flagged with 12px gap
+  // Normal flow: col1 y=186..212 → col2 y=198..278
+  // AI-flagged flow: col1 y=26..140 → col2 y=26..186
+  // col3 Staff:    y=26,  h=88, bottom=114
+  // col3 Customer: y=122, h=88, bottom=210
+  // col3 No int:   y=218, h=88, bottom=306
+  // col4 Recovered: y=26, h=210, bottom=236
+  // col4 At risk:   y=248, h=96, bottom=344  (12px gap from Recovered)
+  // viewBox height: 344 + 50 label space + 20 pad = ~420
+
   return (
     <div style={{ background: "#fff", borderRadius: 16, padding: "22px 26px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
 
@@ -132,85 +145,85 @@ function Dashboard() {
       </div>
 
       <div style={{ background: "#fff", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: "14px 16px 10px", marginBottom: 12 }}>
-        <svg width="100%" viewBox="0 0 900 420" style={{ display: "block" }}>
+        <svg width="100%" viewBox="0 0 900 400" style={{ display: "block" }}>
 
           <T fontSize="10" fill="#B4B2A9" x="78"  y="14" textAnchor="middle">① Volume</T>
           <T fontSize="10" fill="#B4B2A9" x="356" y="14" textAnchor="middle">② AI detection</T>
           <T fontSize="10" fill="#B4B2A9" x="652" y="14" textAnchor="middle">③ Response</T>
           <T fontSize="10" fill="#B4B2A9" x="848" y="14" textAnchor="middle">④ $</T>
 
-          <path d="M142 290 C180 290 210 316 268 320 L268 388 C210 388 180 362 142 356" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <path d="M142 142 C200 142 210 162 268 168 L268 278 C210 278 200 258 142 212" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
 
-          <path d="M142 30 C200 30 210 30 268 30 L268 140 C210 140 200 122 142 122 Z" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+          <path d="M142 26 C200 26 200 26 268 26 L268 186 C200 186 200 168 142 140 Z" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
 
-          <rect x="14" y="26" width="128" height="368" rx="8" fill="#F8F7F4" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="11" fill="#888780" x="78" y="56" textAnchor="middle">Total SCO</T>
-          <T fontSize="11" fill="#888780" x="78" y="70" textAnchor="middle">transactions</T>
-          <T fontSize="22" fontWeight="500" fill="#5F5E5A" x="78" y="108" textAnchor="middle">{fmt(p.total)}</T>
-          <T fontSize="10" fill="#B4B2A9" x="78" y="124" textAnchor="middle">{p.short} total</T>
+          <rect x="14" y="26" width="128" height="186" rx="8" fill="#DEDAD4" stroke="#C8C5BE" strokeWidth="0.5"/>
+          <T fontSize="11" fill="#6B6966" x="78" y="60" textAnchor="middle">Total SCO</T>
+          <T fontSize="11" fill="#6B6966" x="78" y="74" textAnchor="middle">transactions</T>
+          <T fontSize="22" fontWeight="500" fill="#3d3d3a" x="78" y="114" textAnchor="middle">{fmt(p.total)}</T>
+          <T fontSize="10" fill="#9c9a92" x="78" y="130" textAnchor="middle">{p.short} total</T>
 
-          <rect x="268" y="24" width="176" height="120" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
-          <T fontSize="11" fontWeight="500" fill="#791F1F" x="356" y="44" textAnchor="middle">AI-flagged scan miss</T>
-          <T fontSize="10" fill="#C4785A" x="356" y="62" textAnchor="middle">3.2% of total txns</T>
-          <T fontSize="18" fontWeight="500" fill="#A32D2D" x="314" y="98" textAnchor="middle">{fmt(p.flag)}</T>
-          <T fontSize="10" fill="#A32D2D" x="314" y="112" textAnchor="middle">txns</T>
-          <T fontSize="14" fill="#D4AEAE" x="394" y="98" textAnchor="middle">{fmt(p.flagItems)}</T>
-          <T fontSize="10" fill="#D4AEAE" x="394" y="112" textAnchor="middle">items</T>
+          <rect x="268" y="26" width="176" height="160" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+          <T fontSize="11" fontWeight="500" fill="#791F1F" x="356" y="48" textAnchor="middle">AI-flagged scan miss</T>
+          <T fontSize="10" fill="#C4785A" x="356" y="66" textAnchor="middle">3.2% of total txns</T>
+          <T fontSize="18" fontWeight="500" fill="#A32D2D" x="314" y="106" textAnchor="middle">{fmt(p.flag)}</T>
+          <T fontSize="10" fill="#A32D2D" x="314" y="120" textAnchor="middle">txns</T>
+          <T fontSize="14" fill="#D4AEAE" x="394" y="106" textAnchor="middle">{fmt(p.flagItems)}</T>
+          <T fontSize="10" fill="#D4AEAE" x="394" y="120" textAnchor="middle">items</T>
 
-          <rect x="268" y="312" width="176" height="80" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="11" fill="#888780" x="356" y="336" textAnchor="middle">Normal transactions</T>
-          <T fontSize="16" fontWeight="500" fill="#888780" x="356" y="362" textAnchor="middle">{fmt(p.normal)}</T>
-          <T fontSize="10" fill="#B4B2A9" x="356" y="380" textAnchor="middle">{pct(p.normal, p.total)} · no action needed</T>
+          <rect x="268" y="198" width="176" height="80" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="11" fill="#888780" x="356" y="222" textAnchor="middle">Normal transactions</T>
+          <T fontSize="16" fontWeight="500" fill="#888780" x="356" y="248" textAnchor="middle">{fmt(p.normal)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="356" y="266" textAnchor="middle">{pct(p.normal, p.total)} · no action needed</T>
 
-          <path d="M444 34 C510 34 510 40 568 40 L568 108 C510 108 510 84 444 78" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
-          <path d="M444 84 C510 84 510 130 568 134 L568 202 C510 202 510 120 444 112" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
-          <path d="M444 116 C510 116 510 216 568 220 L568 304 C510 304 510 144 444 136" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+          <path d="M444 32 C510 32 510 36 568 36 L568 106 C510 106 510 82 444 76" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
+          <path d="M444 82 C510 82 510 128 568 130 L568 200 C510 200 510 116 444 108" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
+          <path d="M444 112 C510 112 510 212 568 216 L568 296 C510 296 510 142 444 134" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
 
-          <rect x="568" y="28" width="168" height="88" rx="8" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
-          <T fontSize="11" fontWeight="500" fill="#633806" x="652" y="48" textAnchor="middle">Staff rescan</T>
-          <T fontSize="10" fill="#854F0B" x="652" y="62" textAnchor="middle">{pStaff} of flagged txns</T>
-          <T fontSize="16" fontWeight="500" fill="#854F0B" x="614" y="92" textAnchor="middle">{fmt(p.staff)}</T>
-          <T fontSize="10" fill="#854F0B" x="614" y="106" textAnchor="middle">txns</T>
-          <T fontSize="12" fill="#D4BA8A" x="692" y="92" textAnchor="middle">{fmt(p.staffItems)}</T>
-          <T fontSize="10" fill="#D4BA8A" x="692" y="106" textAnchor="middle">items</T>
+          <rect x="568" y="26" width="168" height="88" rx="8" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
+          <T fontSize="11" fontWeight="500" fill="#633806" x="652" y="46" textAnchor="middle">Staff rescan</T>
+          <T fontSize="10" fill="#854F0B" x="652" y="60" textAnchor="middle">{pStaff} of flagged txns</T>
+          <T fontSize="16" fontWeight="500" fill="#854F0B" x="614" y="90" textAnchor="middle">{fmt(p.staff)}</T>
+          <T fontSize="10" fill="#854F0B" x="614" y="104" textAnchor="middle">txns</T>
+          <T fontSize="12" fill="#D4BA8A" x="692" y="90" textAnchor="middle">{fmt(p.staffItems)}</T>
+          <T fontSize="10" fill="#D4BA8A" x="692" y="104" textAnchor="middle">items</T>
 
-          <rect x="568" y="128" width="168" height="88" rx="8" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
-          <T fontSize="11" fontWeight="500" fill="#085041" x="652" y="148" textAnchor="middle">Customer rescan</T>
-          <T fontSize="10" fill="#0F6E56" x="652" y="162" textAnchor="middle">{pCust} of flagged txns</T>
-          <T fontSize="16" fontWeight="500" fill="#0F6E56" x="614" y="192" textAnchor="middle">{fmt(p.cust)}</T>
-          <T fontSize="10" fill="#0F6E56" x="614" y="206" textAnchor="middle">txns</T>
-          <T fontSize="12" fill="#8AC4B4" x="692" y="192" textAnchor="middle">{fmt(p.custItems)}</T>
-          <T fontSize="10" fill="#8AC4B4" x="692" y="206" textAnchor="middle">items</T>
+          <rect x="568" y="124" width="168" height="88" rx="8" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
+          <T fontSize="11" fontWeight="500" fill="#085041" x="652" y="144" textAnchor="middle">Customer rescan</T>
+          <T fontSize="10" fill="#0F6E56" x="652" y="158" textAnchor="middle">{pCust} of flagged txns</T>
+          <T fontSize="16" fontWeight="500" fill="#0F6E56" x="614" y="188" textAnchor="middle">{fmt(p.cust)}</T>
+          <T fontSize="10" fill="#0F6E56" x="614" y="202" textAnchor="middle">txns</T>
+          <T fontSize="12" fill="#8AC4B4" x="692" y="188" textAnchor="middle">{fmt(p.custItems)}</T>
+          <T fontSize="10" fill="#8AC4B4" x="692" y="202" textAnchor="middle">items</T>
 
-          <rect x="568" y="220" width="168" height="88" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
-          <T fontSize="11" fontWeight="500" fill="#791F1F" x="652" y="240" textAnchor="middle">No intervention</T>
-          <T fontSize="10" fill="#A32D2D" x="652" y="254" textAnchor="middle">{pNone} of flagged txns</T>
-          <T fontSize="16" fontWeight="500" fill="#A32D2D" x="614" y="284" textAnchor="middle">{fmt(p.none)}</T>
-          <T fontSize="10" fill="#A32D2D" x="614" y="298" textAnchor="middle">txns</T>
-          <T fontSize="12" fill="#D4AEAE" x="692" y="284" textAnchor="middle">{fmt(p.noneItems)}</T>
-          <T fontSize="10" fill="#D4AEAE" x="692" y="298" textAnchor="middle">items</T>
+          <rect x="568" y="222" width="168" height="88" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+          <T fontSize="11" fontWeight="500" fill="#791F1F" x="652" y="242" textAnchor="middle">No intervention</T>
+          <T fontSize="10" fill="#A32D2D" x="652" y="256" textAnchor="middle">{pNone} of flagged txns</T>
+          <T fontSize="16" fontWeight="500" fill="#A32D2D" x="614" y="286" textAnchor="middle">{fmt(p.none)}</T>
+          <T fontSize="10" fill="#A32D2D" x="614" y="300" textAnchor="middle">txns</T>
+          <T fontSize="12" fill="#D4AEAE" x="692" y="286" textAnchor="middle">{fmt(p.noneItems)}</T>
+          <T fontSize="10" fill="#D4AEAE" x="692" y="300" textAnchor="middle">items</T>
 
-          <path d="M736 34 C778 34 778 40 810 40 L810 202 C778 202 778 192 736 194" fill="#EAF3DE" stroke="#97C459" strokeWidth="1.5"/>
-          <path d="M736 228 C778 228 778 224 810 224 L810 308 C778 308 778 312 736 300" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+          <path d="M736 30 C778 30 778 34 810 34 L810 228 C778 228 778 218 736 208" fill="#EAF3DE" stroke="#97C459" strokeWidth="1.5"/>
+          <path d="M736 232 C778 232 778 258 810 258 L810 336 C778 336 778 330 736 302" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
 
-          <rect x="810" y="28" width="76" height="204" rx="6" fill="#EAF3DE" stroke="#639922" strokeWidth="1.5"/>
-          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="50" textAnchor="middle">Recovered</T>
-          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="64" textAnchor="middle">revenue</T>
+          <rect x="810" y="26" width="76" height="216" rx="6" fill="#EAF3DE" stroke="#639922" strokeWidth="1.5"/>
+          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="48" textAnchor="middle">Recovered</T>
+          <T fontSize="11" fontWeight="500" fill="#27500A" x="848" y="62" textAnchor="middle">revenue</T>
           <T fontSize="13" fontWeight="500" fill="#3B6D11" x="848" y="90" textAnchor="middle">{p.rec}</T>
           <T fontSize="9" fill="#639922" x="848" y="108" textAnchor="middle">staff &amp;</T>
           <T fontSize="9" fill="#639922" x="848" y="120" textAnchor="middle">customer rescan</T>
-          <T fontSize="13" fontWeight="500" fill="#3B6D11" x="848" y="148" textAnchor="middle">{fmt(p.recTxns)}</T>
-          <T fontSize="9" fill="#639922" x="848" y="160" textAnchor="middle">txns</T>
-          <T fontSize="11" fill="#97C459" x="848" y="178" textAnchor="middle">{fmt(p.recItems)}</T>
-          <T fontSize="9" fill="#97C459" x="848" y="190" textAnchor="middle">items</T>
+          <T fontSize="13" fontWeight="500" fill="#3B6D11" x="848" y="150" textAnchor="middle">{fmt(p.recTxns)}</T>
+          <T fontSize="9" fill="#639922" x="848" y="163" textAnchor="middle">txns</T>
+          <T fontSize="11" fill="#97C459" x="848" y="182" textAnchor="middle">{fmt(p.recItems)}</T>
+          <T fontSize="9" fill="#97C459" x="848" y="194" textAnchor="middle">items</T>
 
-          <rect x="810" y="222" width="76" height="96" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
-          <T fontSize="10" fontWeight="500" fill="#791F1F" x="848" y="244" textAnchor="middle">At risk</T>
-          <T fontSize="12" fontWeight="500" fill="#A32D2D" x="848" y="264" textAnchor="middle">{p.risk}</T>
-          <T fontSize="11" fontWeight="500" fill="#A32D2D" x="848" y="286" textAnchor="middle">{fmt(p.none)}</T>
-          <T fontSize="9" fill="#A32D2D" x="848" y="298" textAnchor="middle">txns</T>
-          <T fontSize="10" fill="#D4AEAE" x="848" y="312" textAnchor="middle">{fmt(p.noneItems)}</T>
-          <T fontSize="9" fill="#D4AEAE" x="848" y="323" textAnchor="middle">items</T>
+          <rect x="810" y="250" width="76" height="100" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+          <T fontSize="10" fontWeight="500" fill="#791F1F" x="848" y="270" textAnchor="middle">At risk</T>
+          <T fontSize="12" fontWeight="500" fill="#A32D2D" x="848" y="290" textAnchor="middle">{p.risk}</T>
+          <T fontSize="11" fontWeight="500" fill="#A32D2D" x="848" y="312" textAnchor="middle">{fmt(p.none)}</T>
+          <T fontSize="9" fill="#A32D2D" x="848" y="323" textAnchor="middle">txns</T>
+          <T fontSize="10" fill="#D4AEAE" x="848" y="338" textAnchor="middle">{fmt(p.noneItems)}</T>
+          <T fontSize="9" fill="#D4AEAE" x="848" y="349" textAnchor="middle">items</T>
 
         </svg>
       </div>
