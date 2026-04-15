@@ -156,21 +156,21 @@ function Dashboard() {
           <T fontSize="10" fill="#B4B2A9" x="78" y="180" textAnchor="middle">AI flagged flow</T>
           <T fontSize="10" fill="#B4B2A9" x="78" y="194" textAnchor="middle">see ② →</T>
 
-          {/* COL 2 — flagged on top, normal below */}
-          <rect x="268" y="14" width="176" height="82" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="2"/>
-          <T fontSize="12" fontWeight="500" fill="#791F1F" x="356" y="36" textAnchor="middle">AI-flagged scan miss</T>
-          <T fontSize="16" fontWeight="500" fill="#A32D2D" x="316" y="60" textAnchor="middle">{fmt(p.flag)}</T>
-          <line x1="344" y1="48" x2="344" y2="72" stroke="#F09595" strokeWidth="0.5"/>
-          <T fontSize="9" fill="#A32D2D" x="316" y="72" textAnchor="middle">txns</T>
-          <T fontSize="9" fill="#A32D2D" x="372" y="60" textAnchor="middle">{fmt(p.flagItems)}</T>
-          <T fontSize="9" fill="#A32D2D" x="372" y="72" textAnchor="middle">items</T>
-          {/* 3.2% badge left-aligned under txns */}
-          <rect x="270" y="78" width="80" height="16" rx="4" fill="#FCEBEB" stroke="#F09595" strokeWidth="0.5"/>
-          <T fontSize="10" fontWeight="500" fill="#A32D2D" x="310" y="89" textAnchor="middle">{pct(p.flag, p.total)} of total</T>
+          {/* COL 2 */}
+          <rect x="268" y="14" width="176" height="156" rx="8" fill="#F8F7F4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="12" fill="#888780" x="356" y="52" textAnchor="middle">Normal transactions</T>
+          <T fontSize="18" fontWeight="500" fill="#888780" x="356" y="90" textAnchor="middle">{fmt(p.normal)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="356" y="106" textAnchor="middle">{pct(p.normal, p.total)} · no action needed</T>
 
-          <rect x="268" y="188" width="176" height="44" rx="8" fill="#F0EEE8" stroke="#C8C6C0" strokeWidth="0.5"/>
-          <T fontSize="11" fill="#B4B2A9" x="356" y="207" textAnchor="middle">Normal transactions</T>
-          <T fontSize="14" fontWeight="500" fill="#C8C6C0" x="356" y="226" textAnchor="middle">{fmt(p.normal)}</T>
+          <rect x="268" y="188" width="176" height="82" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="2"/>
+          <T fontSize="12" fontWeight="500" fill="#791F1F" x="356" y="210" textAnchor="middle">AI-flagged scan miss</T>
+          <T fontSize="16" fontWeight="500" fill="#A32D2D" x="328" y="236" textAnchor="middle">{fmt(p.flag)}</T>
+          <line x1="356" y1="222" x2="356" y2="248" stroke="#F09595" strokeWidth="0.5"/>
+          <T fontSize="9" fill="#A32D2D" x="328" y="248" textAnchor="middle">txns</T>
+          <T fontSize="9" fill="#A32D2D" x="384" y="236" textAnchor="middle">{fmt(p.flagItems)}</T>
+          <T fontSize="9" fill="#A32D2D" x="384" y="248" textAnchor="middle">items</T>
+          <rect x="304" y="254" width="104" height="16" rx="4" fill="#FCEBEB" stroke="#F09595" strokeWidth="0.5"/>
+          <T fontSize="10" fontWeight="500" fill="#A32D2D" x="356" y="265" textAnchor="middle">{pct(p.flag, p.total)} of total</T>
 
           {/* THREE FLOWS col2→col3: start from y~210..248, land at col3 nodes */}
           <path d="M444 202 C506 202 506 210 568 210 L568 270 C506 270 506 262 444 228" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
