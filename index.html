@@ -135,21 +135,10 @@ function Dashboard() {
         Transaction integrity flow — AI scan miss detection
       </div>
 
-      {/* Sankey
-          Layout (viewBox 900×430):
-          - AI-flagged stream occupies TOP rows (y=14..270)
-          - Normal stream is a slim faint band BELOW (y=290..310)
-          - col1 x=14..142, col2 x=268..444, col3 x=568..736, col4 x=810..886
-          - AI-flagged card col2: y=14, h=100  → bottom edge y=114
-          - Red flow col1→col2: top y=14, bottom y=114 (matches card exactly)
-          - 3 branch flows leave col2 right edge at y=20/60/96
-          - Staff rescan   col3: y=14,  h=68
-          - Customer rescan col3: y=94,  h=68
-          - No intervention col3: y=174, h=48
-          - Normal faint band col2/col3/col4: y=290, h=20
-      -->
+
       <div style={{ background: "#fff", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: "14px 16px 10px", marginBottom: 12 }}>
         <svg width="100%" viewBox="0 0 900 430" style={{ display: "block" }}>
+
 
           {/* ── DRAW ORDER: normal (faint) first so flagged sits on top ── */}
 
