@@ -28,19 +28,19 @@ const STORES = {
 
 const PERIODS = {
   q1: { label: "Jan 1 – Mar 31, 2025 · Q1 2025", short: "Q1 2025",
-        total: 113840, normal: 110185, flag: 3655, flagItems: 10840,
+        total: 113840, normal: 110185, normalItems: 418703, flag: 3655, flagItems: 10840,
         staff: 1758, staffItems: 5210, cust: 1166, custItems: 3470,
         none: 731, noneItems: 2160, rec: "$42,680", risk: "$10,672", recTxns: 2924, recItems: 8680 },
   q2: { label: "Apr 1 – Jun 30, 2025 · Q2 2025", short: "Q2 2025",
-        total: 118400, normal: 114460, flag: 3940, flagItems: 11820,
+        total: 118400, normal: 114460, normalItems: 434948, flag: 3940, flagItems: 11820,
         staff: 1930, staffItems: 5740, cust: 1240, custItems: 3680,
         none: 770, noneItems: 2400, rec: "$46,200", risk: "$11,340", recTxns: 3170, recItems: 9420 },
   q3: { label: "Jul 1 – Sep 30, 2025 · Q3 2025", short: "Q3 2025",
-        total: 121600, normal: 117540, flag: 4060, flagItems: 12180,
+        total: 121600, normal: 117540, normalItems: 446652, flag: 4060, flagItems: 12180,
         staff: 1980, staffItems: 5900, cust: 1310, custItems: 3890,
         none: 770, noneItems: 2390, rec: "$48,720", risk: "$11,550", recTxns: 3290, recItems: 9790 },
   q4: { label: "Oct 1 – Dec 31, 2024 · Q4 2024", short: "Q4 2024",
-        total: 109200, normal: 105540, flag: 3660, flagItems: 10980,
+        total: 109200, normal: 105540, normalItems: 401052, flag: 3660, flagItems: 10980,
         staff: 1740, staffItems: 5180, cust: 1160, custItems: 3440,
         none: 760, noneItems: 2360, rec: "$41,280", risk: "$10,830", recTxns: 2900, recItems: 8620 },
 };
@@ -139,7 +139,7 @@ function Dashboard() {
           <T fontSize="10" fill="#B4B2A9" x="580" y="16" textAnchor="middle">③ Response</T>
           <T fontSize="10" fill="#B4B2A9" x="845" y="16" textAnchor="middle">④ $</T>
 
-          <path d="M142 234 C172 234 178 248 196 252 L196 308 C178 308 172 294 142 290" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <path d="M142 234 C168 234 178 252 196 252 L196 304 C178 304 168 286 142 286" fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
           <path d="M142 36 C172 36 178 36 196 36 L196 220 C178 220 172 208 142 200 Z" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
 
           <rect x="14" y="36" width="128" height="268" rx="8" fill="#DEDAD4" stroke="#C8C5BE" strokeWidth="0.5"/>
@@ -156,10 +156,12 @@ function Dashboard() {
           <T fontSize="14" fill="#D4AEAE" x="330" y="120" textAnchor="middle">{fmt(p.flagItems)}</T>
           <T fontSize="10" fill="#D4AEAE" x="330" y="134" textAnchor="middle">items</T>
 
-          <rect x="196" y="232" width="190" height="72" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="11" fill="#888780" x="291" y="256" textAnchor="middle">Normal transactions</T>
-          <T fontSize="16" fontWeight="500" fill="#888780" x="291" y="280" textAnchor="middle">{fmt(p.normal)}</T>
-          <T fontSize="10" fill="#B4B2A9" x="291" y="295" textAnchor="middle">{pct(p.normal, p.total)} · no action needed</T>
+          <rect x="196" y="252" width="190" height="82" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="11" fill="#888780" x="291" y="272" textAnchor="middle">Normal transactions</T>
+          <T fontSize="14" fontWeight="500" fill="#888780" x="252" y="298" textAnchor="middle">{fmt(p.normal)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="252" y="311" textAnchor="middle">txns</T>
+          <T fontSize="12" fill="#C4C2BB" x="330" y="298" textAnchor="middle">{fmt(p.normalItems)}</T>
+          <T fontSize="10" fill="#C4C2BB" x="330" y="311" textAnchor="middle">items</T>
 
           <path d="M386 42 C444 42 444 40 492 40 L492 110 C444 110 444 92 386 86" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
           <path d="M386 92 C444 92 444 126 492 128 L492 200 C444 200 444 132 386 122" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
