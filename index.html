@@ -45,19 +45,23 @@ const PERIODS = {
   q1: { label: "Jan 1 – Mar 31, 2025 · Q1 2025", short: "Q1 2025",
         total: 113840, normal: 110185, normalItems: 418703, flag: 3655, flagItems: 10840,
         staff: 1758, staffItems: 5210, cust: 1166, custItems: 3470,
-        none: 731, noneItems: 2160, rec: "$42,680", risk: "$10,672", recTxns: 2924, recItems: 8680 },
+        none: 731, noneItems: 2160, rec: "$42,680", risk: "$10,672", recTxns: 2924, recItems: 8680,
+        qtlySales: 1656000 },
   q2: { label: "Apr 1 – Jun 30, 2025 · Q2 2025", short: "Q2 2025",
         total: 118400, normal: 114460, normalItems: 434948, flag: 3940, flagItems: 11820,
         staff: 1930, staffItems: 5740, cust: 1240, custItems: 3680,
-        none: 770, noneItems: 2400, rec: "$46,200", risk: "$11,340", recTxns: 3170, recItems: 9420 },
+        none: 770, noneItems: 2400, rec: "$46,200", risk: "$11,340", recTxns: 3170, recItems: 9420,
+        qtlySales: 1728000 },
   q3: { label: "Jul 1 – Sep 30, 2025 · Q3 2025", short: "Q3 2025",
         total: 121600, normal: 117540, normalItems: 446652, flag: 4060, flagItems: 12180,
         staff: 1980, staffItems: 5900, cust: 1310, custItems: 3890,
-        none: 770, noneItems: 2390, rec: "$48,720", risk: "$11,550", recTxns: 3290, recItems: 9790 },
+        none: 770, noneItems: 2390, rec: "$48,720", risk: "$11,550", recTxns: 3290, recItems: 9790,
+        qtlySales: 1809000 },
   q4: { label: "Oct 1 – Dec 31, 2025 · Q4 2025", short: "Q4 2025",
         total: 109200, normal: 105540, normalItems: 401052, flag: 3660, flagItems: 10980,
         staff: 1740, staffItems: 5180, cust: 1160, custItems: 3440,
-        none: 760, noneItems: 2360, rec: "$41,280", risk: "$10,830", recTxns: 2900, recItems: 8620 },
+        none: 760, noneItems: 2360, rec: "$41,280", risk: "$10,830", recTxns: 2900, recItems: 8620,
+        qtlySales: 1584000 },
 };
 
 const fmt = n => n.toLocaleString();
@@ -96,7 +100,7 @@ function Dashboard() {
   const pStaff = pct(p.staff, p.flag);
   const pCust  = pct(p.cust,  p.flag);
   const pNone  = pct(p.none,  p.flag);
-  const annualRec = "$" + (parseInt(p.rec.replace(/[$,]/g, "")) * 4).toLocaleString() + "+";
+  const recPct = (parseInt(p.rec.replace(/[$,]/g, "")) / p.qtlySales * 100).toFixed(1) + "%";
 
   return (
     <div style={{ background: "#fff", borderRadius: 16, padding: "22px 26px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
@@ -211,14 +215,14 @@ function Dashboard() {
           <path d="M674 220 C722 220 722 224 758 224 L758 360 C722 360 722 296 674 294" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
 
           <rect x="758" y="36" width="126" height="176" rx="6" fill="#EAF3DE" stroke="#639922" strokeWidth="1.5"/>
-          <T fontSize="11" fontWeight="500" fill="#27500A" x="821" y="58" textAnchor="middle">Recovered</T>
-          <T fontSize="11" fontWeight="500" fill="#27500A" x="821" y="72" textAnchor="middle">revenue</T>
-          <T fontSize="14" fontWeight="500" fill="#3B6D11" x="821" y="100" textAnchor="middle">{p.rec}</T>
-          <T fontSize="10" fill="#639922" x="821" y="118" textAnchor="middle">staff &amp; customer rescan</T>
-          <T fontSize="14" fontWeight="500" fill="#3B6D11" x="821" y="148" textAnchor="middle">{fmt(p.recTxns)}</T>
-          <T fontSize="10" fill="#639922" x="821" y="161" textAnchor="middle">txns</T>
-          <T fontSize="12" fill="#97C459" x="821" y="178" textAnchor="middle">{fmt(p.recItems)}</T>
-          <T fontSize="10" fill="#97C459" x="821" y="191" textAnchor="middle">items</T>
+          <T fontSize="11" fontWeight="500" fill="#27500A" x="821" y="56" textAnchor="middle">Recovered</T>
+          <T fontSize="11" fontWeight="500" fill="#27500A" x="821" y="70" textAnchor="middle">revenue</T>
+          <T fontSize="10" fill="#639922" x="821" y="88" textAnchor="middle">{recPct} of quarterly sales</T>
+          <T fontSize="14" fontWeight="500" fill="#3B6D11" x="821" y="112" textAnchor="middle">{p.rec}</T>
+          <T fontSize="13" fontWeight="500" fill="#3B6D11" x="821" y="140" textAnchor="middle">{fmt(p.recTxns)}</T>
+          <T fontSize="10" fill="#639922" x="821" y="153" textAnchor="middle">txns</T>
+          <T fontSize="12" fill="#97C459" x="821" y="170" textAnchor="middle">{fmt(p.recItems)}</T>
+          <T fontSize="10" fill="#97C459" x="821" y="182" textAnchor="middle">items</T>
 
           <rect x="758" y="224" width="126" height="146" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
           <T fontSize="11" fontWeight="500" fill="#791F1F" x="821" y="246" textAnchor="middle">At risk</T>
@@ -242,7 +246,7 @@ function Dashboard() {
         <div style={{ borderRadius: 8, padding: "12px 14px", borderLeft: "3px solid #BA7517", background: "#FAEEDA" }}>
           <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#854F0B", marginBottom: 5 }}>Opportunity ahead</div>
           <div style={{ fontSize: 12, lineHeight: 1.6, color: "#633806" }}>
-            <strong>{pNone} of flagged transactions</strong> ({fmt(p.none)} txns) had no follow-up action. Closing this gap could unlock an estimated <strong>{annualRec} in additional annual recovery</strong> for this store — without adding any new hardware.
+            <strong>{pNone} of flagged transactions</strong> ({fmt(p.none)} txns) had no follow-up action. Closing this gap could unlock an estimated <strong>${Math.round(parseInt(p.rec.replace(/[$,]/g,"")) * p.none / p.recTxns).toLocaleString()}+ in additional quarterly recovery</strong> for this store — without adding any new hardware.
           </div>
         </div>
       </div>
