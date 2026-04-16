@@ -156,12 +156,13 @@ function Dashboard() {
           <T fontSize="14" fill="#D4AEAE" x="330" y="120" textAnchor="middle">{fmt(p.flagItems)}</T>
           <T fontSize="10" fill="#D4AEAE" x="330" y="134" textAnchor="middle">items</T>
 
-          <rect x="196" y="252" width="190" height="82" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="11" fill="#888780" x="291" y="272" textAnchor="middle">Normal transactions</T>
-          <T fontSize="14" fontWeight="500" fill="#888780" x="252" y="298" textAnchor="middle">{fmt(p.normal)}</T>
-          <T fontSize="10" fill="#B4B2A9" x="252" y="311" textAnchor="middle">txns</T>
-          <T fontSize="12" fill="#C4C2BB" x="330" y="298" textAnchor="middle">{fmt(p.normalItems)}</T>
-          <T fontSize="10" fill="#C4C2BB" x="330" y="311" textAnchor="middle">items</T>
+          <rect x="196" y="252" width="190" height="94" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
+          <T fontSize="11" fill="#888780" x="291" y="270" textAnchor="middle">Normal transactions</T>
+          <T fontSize="10" fill="#B4B2A9" x="291" y="284" textAnchor="middle">{pct(p.normal, p.total)} of total txns</T>
+          <T fontSize="14" fontWeight="500" fill="#888780" x="252" y="308" textAnchor="middle">{fmt(p.normal)}</T>
+          <T fontSize="10" fill="#B4B2A9" x="252" y="321" textAnchor="middle">txns</T>
+          <T fontSize="12" fill="#C4C2BB" x="330" y="308" textAnchor="middle">{fmt(p.normalItems)}</T>
+          <T fontSize="10" fill="#C4C2BB" x="330" y="321" textAnchor="middle">items</T>
 
           <path d="M386 42 C444 42 444 40 492 40 L492 110 C444 110 444 92 386 86" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
           <path d="M386 92 C444 92 444 126 492 128 L492 200 C444 200 444 132 386 122" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
