@@ -130,7 +130,7 @@ function Dashboard() {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, gap: 16 }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {[["SCO lanes", s.sco + " units"], ["Daily transactions", sp.txn + " txns"], ["Daily items scanned", sp.items + " items"], ["Daily total sales", sp.sales]].map(([l, v]) => (
+          {[["SCO lanes", s.sco + " units"], ["Quarterly transactions", fmt(p.total) + " txns"], ["Quarterly items scanned", fmt(p.normalItems + p.flagItems) + " items"], ["Quarterly total sales", "$" + (p.qtlySales).toLocaleString()]].map(([l, v]) => (
             <div key={l} style={{ background: "#f5f4f0", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "7px 14px" }}>
               <div style={{ fontSize: 11, color: "#888780", marginBottom: 2 }}>{l}</div>
               <div style={{ fontSize: 14, fontWeight: 500, color: "#1a1a18" }}>{v}</div>
