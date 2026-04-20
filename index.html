@@ -11,67 +11,186 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #f0ede8; min-height: 100vh; display: flex; justify-content: center; padding: 24px 16px; }
   #root { width: 100%; max-width: 1100px; }
-  select { font-family: inherit; }
-  button { font-family: inherit; }
+  select, button, input { font-family: inherit; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    display: flex; align-items: flex-start; justify-content: center;
+    z-index: 1000; padding: 32px 16px; overflow-y: auto;
+  }
+  .modal-box {
+    background: #fff; border-radius: 14px; width: 100%; max-width: 960px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18); padding: 28px 28px 24px;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 18px; right: 20px;
+    background: none; border: none; cursor: pointer;
+    font-size: 20px; color: #888780; line-height: 1;
+  }
+  .modal-close:hover { color: #1a1a18; }
+
+  /* Table */
+  .tx-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .tx-table th {
+    text-align: left; font-size: 11px; font-weight: 500; color: #888780;
+    padding: 8px 10px; border-bottom: 0.5px solid rgba(0,0,0,0.1);
+    white-space: nowrap;
+  }
+  .tx-table td {
+    padding: 10px 10px; border-bottom: 0.5px solid rgba(0,0,0,0.07);
+    color: #1a1a18; vertical-align: middle;
+  }
+  .tx-table tr:last-child td { border-bottom: none; }
+  .tx-table tr:hover td { background: #f9f8f6; }
+
+  /* Badge */
+  .badge {
+    display: inline-block; border-radius: 4px; padding: 2px 7px;
+    font-size: 10px; font-weight: 500; white-space: nowrap;
+  }
+  .badge-red    { background: #FCEBEB; color: #A32D2D; }
+  .badge-orange { background: #FAEEDA; color: #854F0B; }
+  .badge-grey   { background: #f5f4f0; color: #6B6966; }
+  .badge-blue   { background: #E8EFFE; color: #2D4FA3; }
+
+  /* Thumbnail placeholder */
+  .thumb {
+    width: 48px; height: 36px; background: #e5e4e0; border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #aaa; flex-shrink: 0;
+  }
+  .thumb-row { display: flex; gap: 4px; }
+
+  /* Video placeholder */
+  .vid-thumb {
+    width: 72px; height: 40px; background: #e5e4e0; border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .vid-thumb svg { opacity: 0.5; }
+
+  /* Clickable card hint */
+  .clickable-card {
+    cursor: pointer; transition: filter 0.15s, transform 0.1s;
+  }
+  .clickable-card:hover { filter: brightness(0.96); }
+
+  /* Barcode filter chip */
+  .barcode-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #E8EFFE; color: #2D4FA3; border-radius: 20px;
+    padding: 3px 10px; font-size: 11px; font-weight: 500;
+  }
+  .barcode-chip button {
+    background: none; border: none; cursor: pointer; color: #2D4FA3;
+    font-size: 13px; line-height: 1; padding: 0;
+  }
+
+  /* Stat pills in modal header */
+  .stat-pill {
+    background: #f5f4f0; border: 0.5px solid rgba(0,0,0,0.1);
+    border-radius: 8px; padding: 7px 14px; font-size: 12px;
+  }
+  .stat-pill .val { font-weight: 500; color: #1a1a18; }
+  .stat-pill .lbl { color: #888780; font-size: 11px; margin-top: 1px; }
+
+  /* Barcode insight box */
+  .barcode-insight {
+    background: #E8EFFE; border: 0.5px solid #b3c2f5; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: #1a2a6e;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .barcode-insight .icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState } = React;
+const { useState, useMemo } = React;
 
-// ── Layout constants (mockup v7) ───────────────────────────────────
-// viewBox: 940 × 540
-//
-// Col1:  x=14  y=30  w=100  h=400  bottom=430   (drawn AFTER flows to sit on top)
-// Col2 red:   x=174 y=50  w=180  h=280  bottom=330
-// Col2 grey:  x=174 y=360 w=180  h=90   bottom=450
-//
-// col1→col2 flows (special tilted paths, NOT sankeyPath):
-//   Red:  left top=30  bottom=310  right top=50  bottom=330   (right edge x=174, flush with col2)
-//   Grey: left top=340 bottom=430  right top=360 bottom=450
-//
-// col2→col3 flows (left edge x=354, right edge x=424):
-//   Left bands proportional to p.flag:
-//     Staff: y = 50  … 50 + 280*(staff/flag)
-//     Cust:  y = staffBottom … staffBottom + 280*(cust/flag)
-//     None:  y = custBottom  … 330
-//   Right bands = col3 card positions:
-//     Staff: y=85  … 235
-//     Cust:  y=245 … 355
-//     None:  y=365 … 465
-//
-// Col3 Staff:   x=424 y=85  w=182 h=150  bottom=235
-// Col3 Cust:    x=424 y=245 w=182 h=110  bottom=355
-// Col3 None:    x=424 y=365 w=182 h=100  bottom=465
-//
-// col3→col4 flows (left edge x=606, right edge x=666):
-//   Green (staff+cust): left y=85–355,  right y=105–320
-//   Red   (none):       left y=365–465, right y=345–460
-//
-// Col4 green: x=666 y=105 w=160 h=215  bottom=320  center=746
-// Col4 red:   x=666 y=345 w=160 h=115  bottom=460  center=746
-// ──────────────────────────────────────────────────────────────────
+// ── Mock transaction data generator ──────────────────────────────
+const ALERT_TYPES = ["Item Left", "Item Switch", "Item Left", "Item Left", "Item Switch"];
+const BARCODES = ["4901085614556","4902102141321","4901201308612","4549337665731","4987035841302","4902430642934","4901777317185"];
+const BARCODE_NAMES = {
+  "4901085614556": "Asahi Super Dry 350ml",
+  "4902102141321": "Meiji Milk Chocolate",
+  "4901201308612": "Sapporo Draft Beer 500ml",
+  "4549337665731": "Pocky Chocolate 2pk",
+  "4987035841302": "Kirin Ichiban 350ml",
+  "4902430642934": "Kit Kat Matcha 12pk",
+  "4901777317185": "Suntory Premium Malt's",
+};
+
+function seedRand(seed) {
+  let s = seed;
+  return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+}
+
+function generateTxns(periodKey, flagCount, noneCount) {
+  const rand = seedRand(periodKey.charCodeAt(0) * 31 + flagCount);
+  const baseDate = { q1: "2025-01-", q2: "2025-04-", q3: "2025-07-", q4: "2025-10-" }[periodKey];
+  const txns = [];
+  for (let i = 0; i < flagCount; i++) {
+    const r = rand;
+    const day = String(Math.floor(r() * 89) + 1).padStart(2, "0");
+    const hh  = String(Math.floor(r() * 14) + 8).padStart(2, "0");
+    const mm  = String(Math.floor(r() * 60)).padStart(2, "0");
+    const ss  = String(Math.floor(r() * 60)).padStart(2, "0");
+    const alertType = ALERT_TYPES[Math.floor(r() * ALERT_TYPES.length)];
+    // Item Left doesn't have a known barcode; Item Switch has a suspect barcode
+    const hasBarcode = alertType === "Item Switch";
+    const bc = hasBarcode ? BARCODES[Math.floor(r() * BARCODES.length)] : null;
+    const itemCount = Math.floor(r() * 3) + 1;
+    const action = i < (flagCount - noneCount)
+      ? (i % 3 === 0 ? "Staff Rescan" : "Customer Rescan")
+      : "No Intervention";
+    txns.push({
+      id: `6${Math.floor(r() * 900000 + 100000)}${String.fromCharCode(97 + Math.floor(r()*26))}...`,
+      datetime: `${baseDate}${day} ${hh}:${mm}:${ss}`,
+      alertType,
+      itemCount,
+      barcode: bc,
+      barcodeName: bc ? BARCODE_NAMES[bc] : null,
+      action,
+      // Also track all barcodes in the transaction (for normal tx lookup)
+      allBarcodes: Array.from({length: itemCount}, (_, k) => BARCODES[Math.floor(rand() * BARCODES.length)]),
+    });
+  }
+  return txns;
+}
+
+// Generate "normal" txns that contain barcodes (for barcode filter)
+function generateNormalTxnsWithBarcode(periodKey, barcode, count) {
+  const rand = seedRand(barcode.charCodeAt(3) * 17 + count);
+  const baseDate = { q1: "2025-01-", q2: "2025-04-", q3: "2025-07-", q4: "2025-10-" }[periodKey];
+  return Array.from({ length: count }, (_, i) => {
+    const r = rand;
+    const day = String(Math.floor(r() * 89) + 1).padStart(2, "0");
+    const hh  = String(Math.floor(r() * 14) + 8).padStart(2, "0");
+    const mm  = String(Math.floor(r() * 60)).padStart(2, "0");
+    const ss  = String(Math.floor(r() * 60)).padStart(2, "0");
+    const itemCount = Math.floor(r() * 4) + 1;
+    return {
+      id: `7${Math.floor(r() * 900000 + 100000)}${String.fromCharCode(97 + Math.floor(r()*26))}...`,
+      datetime: `${baseDate}${day} ${hh}:${mm}:${ss}`,
+      alertType: null,
+      itemCount,
+      barcode,
+      barcodeName: BARCODE_NAMES[barcode],
+      action: "Normal",
+      allBarcodes: [barcode],
+    };
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────
 
 const STORES = {
-  s1: { name: "Downtown Store", sco: 4, periods: {
-    q1: { txn: "1,240", items: "4,650", sales: "$18,400" },
-    q2: { txn: "1,310", items: "4,890", sales: "$19,200" },
-    q3: { txn: "1,380", items: "5,120", sales: "$20,100" },
-    q4: { txn: "1,190", items: "4,420", sales: "$17,600" },
-  }},
-  s2: { name: "Westside Store", sco: 6, periods: {
-    q1: { txn: "1,880", items: "6,920", sales: "$27,100" },
-    q2: { txn: "1,960", items: "7,180", sales: "$28,400" },
-    q3: { txn: "2,040", items: "7,510", sales: "$29,800" },
-    q4: { txn: "1,820", items: "6,700", sales: "$26,200" },
-  }},
-  s3: { name: "Eastgate Store", sco: 3, periods: {
-    q1: { txn: "890",   items: "3,280", sales: "$13,600" },
-    q2: { txn: "940",   items: "3,450", sales: "$14,200" },
-    q3: { txn: "980",   items: "3,610", sales: "$14,900" },
-    q4: { txn: "860",   items: "3,160", sales: "$13,100" },
-  }},
+  s1: { name: "Downtown Store", sco: 4 },
+  s2: { name: "Westside Store", sco: 6 },
+  s3: { name: "Eastgate Store", sco: 3 },
 };
 
 const PERIODS = {
@@ -126,21 +245,325 @@ const LegDot = ({ color, label }) => (
   </div>
 );
 
-// Standard sankey path for col2→col3 and col3→col4
 const sankeyPath = (lx, lyt, lyb, rx, ryt, ryb) => {
   const mx = (lx + rx) / 2;
-  return [
-    `M${lx} ${lyt}`,
-    `C${mx} ${lyt} ${mx} ${ryt} ${rx} ${ryt}`,
-    `L${rx} ${ryb}`,
-    `C${mx} ${ryb} ${mx} ${lyb} ${lx} ${lyb}`,
-    "Z"
-  ].join(" ");
+  return [`M${lx} ${lyt}`, `C${mx} ${lyt} ${mx} ${ryt} ${rx} ${ryt}`,
+          `L${rx} ${ryb}`, `C${mx} ${ryb} ${mx} ${lyb} ${lx} ${lyb}`, "Z"].join(" ");
 };
 
+// ── Transaction List Modal ────────────────────────────────────────
+function TxModal({ mode, periodKey, period, onClose }) {
+  // mode: "all-flagged" | "no-intervention"
+  const [barcodeInput, setBarcodeInput] = useState("");
+  const [activeBarcode, setActiveBarcode] = useState(null);
+  const [showNormal, setShowNormal] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 8;
+
+  const title = mode === "all-flagged"
+    ? "AI-Flagged Scan Miss Transactions"
+    : "No Intervention Transactions";
+
+  // Generate mock data (small sample for demo)
+  const sampleSize = mode === "all-flagged" ? Math.min(period.flag, 60) : Math.min(period.none, 30);
+  const noneSize   = mode === "all-flagged" ? Math.min(period.none, 20) : Math.min(period.none, 30);
+
+  const allTxns = useMemo(() =>
+    generateTxns(periodKey, sampleSize, noneSize),
+    [periodKey, sampleSize, noneSize]
+  );
+
+  const flaggedTxns = mode === "no-intervention"
+    ? allTxns.filter(t => t.action === "No Intervention")
+    : allTxns;
+
+  // Barcode filter
+  const handleBarcodeSearch = (e) => {
+    if (e.key === "Enter" && barcodeInput.trim()) {
+      setActiveBarcode(barcodeInput.trim());
+      setShowNormal(false);
+      setPage(1);
+    }
+  };
+
+  const normalTxns = useMemo(() => {
+    if (!activeBarcode) return [];
+    const cnt = Math.floor(period.normal / 500); // proportional sample
+    return generateNormalTxnsWithBarcode(periodKey, activeBarcode, Math.min(cnt, 20));
+  }, [activeBarcode, periodKey, period.normal]);
+
+  // Filter flagged by barcode
+  const filteredFlagged = activeBarcode
+    ? flaggedTxns.filter(t => t.barcode === activeBarcode || (t.allBarcodes && t.allBarcodes.includes(activeBarcode)))
+    : flaggedTxns;
+
+  const displayTxns = showNormal
+    ? normalTxns
+    : filteredFlagged;
+
+  // Pagination
+  const totalPages = Math.ceil(displayTxns.length / PAGE_SIZE);
+  const paginated  = displayTxns.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+
+  // Barcode insight stats
+  const barcodeInSwitchTxns = activeBarcode
+    ? flaggedTxns.filter(t => t.barcode === activeBarcode).length
+    : 0;
+  const barcodeInNormalTxns = normalTxns.length;
+  const totalWithBarcode    = barcodeInSwitchTxns + barcodeInNormalTxns;
+  const flagRate = totalWithBarcode > 0
+    ? ((barcodeInSwitchTxns / totalWithBarcode) * 100).toFixed(1) + "%"
+    : "—";
+
+  const actionColor = {
+    "Staff Rescan":     { bg: "#FAEEDA", color: "#854F0B" },
+    "Customer Rescan":  { bg: "#EAF3DE", color: "#3B6D11" },
+    "No Intervention":  { bg: "#FCEBEB", color: "#A32D2D" },
+    "Normal":           { bg: "#f5f4f0", color: "#6B6966" },
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal-box">
+        <button className="modal-close" onClick={onClose}>✕</button>
+
+        {/* Header */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            {mode === "no-intervention" && (
+              <span style={{ background: "#FCEBEB", color: "#A32D2D", borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 500 }}>
+                No Intervention
+              </span>
+            )}
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: "#1a1a18" }}>{title}</h2>
+          </div>
+          <div style={{ fontSize: 12, color: "#888780" }}>{period.label}</div>
+        </div>
+
+        {/* Summary pills */}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+          <div className="stat-pill">
+            <div className="val">{fmt(mode === "all-flagged" ? period.flag : period.none)}</div>
+            <div className="lbl">Total transactions</div>
+          </div>
+          <div className="stat-pill">
+            <div className="val">{mode === "all-flagged" ? pct(period.flag, period.total) : pct(period.none, period.flag)}</div>
+            <div className="lbl">{mode === "all-flagged" ? "of all txns" : "of flagged txns"}</div>
+          </div>
+          {mode === "all-flagged" && (
+            <div className="stat-pill">
+              <div className="val">{fmt(period.flagItems)}</div>
+              <div className="lbl">Issued items</div>
+            </div>
+          )}
+          {mode === "no-intervention" && (
+            <div className="stat-pill" style={{ background: "#FCEBEB" }}>
+              <div className="val" style={{ color: "#A32D2D" }}>{period.risk}</div>
+              <div className="lbl">Est. revenue at risk</div>
+            </div>
+          )}
+        </div>
+
+        {/* Barcode filter */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Filter by item barcode
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ position: "relative", flexGrow: 1, maxWidth: 320 }}>
+              <input
+                value={barcodeInput}
+                onChange={e => setBarcodeInput(e.target.value)}
+                onKeyDown={handleBarcodeSearch}
+                placeholder="Enter barcode and press Enter (e.g. 4901085614556)"
+                style={{
+                  width: "100%", fontSize: 12, padding: "7px 12px",
+                  border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 7,
+                  color: "#1a1a18", outline: "none",
+                }}
+              />
+            </div>
+            {activeBarcode && (
+              <div className="barcode-chip">
+                <span>🔍 {activeBarcode}</span>
+                {BARCODE_NAMES[activeBarcode] && <span style={{ opacity: 0.7 }}>· {BARCODE_NAMES[activeBarcode]}</span>}
+                <button onClick={() => { setActiveBarcode(null); setBarcodeInput(""); setShowNormal(false); setPage(1); }}>×</button>
+              </div>
+            )}
+          </div>
+          {/* Quick demo barcodes */}
+          <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 10, color: "#aaa" }}>Quick select:</span>
+            {BARCODES.slice(0, 4).map(bc => (
+              <button key={bc} onClick={() => { setActiveBarcode(bc); setBarcodeInput(bc); setShowNormal(false); setPage(1); }}
+                style={{ fontSize: 10, padding: "2px 8px", border: "0.5px solid rgba(0,0,0,0.18)", borderRadius: 4, background: "#f5f4f0", cursor: "pointer", color: "#5f5e5a" }}>
+                {bc}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Barcode insight banner */}
+        {activeBarcode && (
+          <div className="barcode-insight">
+            <span className="icon">📊</span>
+            <div>
+              <strong>Barcode {activeBarcode}</strong>
+              {BARCODE_NAMES[activeBarcode] && <> — {BARCODE_NAMES[activeBarcode]}</>}
+              <div style={{ marginTop: 4, lineHeight: 1.6 }}>
+                Found in <strong>{barcodeInSwitchTxns} AI-flagged txns</strong> (Item Switch) and <strong>{barcodeInNormalTxns} normal txns</strong> in this period.
+                {totalWithBarcode > 0 && <> AI flagged rate for this barcode: <strong>{flagRate}</strong> of transactions containing it.</>}
+                {" "}Note: <em>Item Left</em> events don't record which barcode was missed, so those are excluded from this analysis.
+              </div>
+              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => { setShowNormal(false); setPage(1); }}
+                  style={{
+                    fontSize: 11, padding: "4px 12px", borderRadius: 6, cursor: "pointer",
+                    border: showNormal ? "0.5px solid rgba(0,0,0,0.18)" : "none",
+                    background: showNormal ? "#f5f4f0" : "#2D4FA3", color: showNormal ? "#5f5e5a" : "#fff",
+                    fontWeight: 500,
+                  }}>
+                  Flagged ({barcodeInSwitchTxns})
+                </button>
+                <button
+                  onClick={() => { setShowNormal(true); setPage(1); }}
+                  style={{
+                    fontSize: 11, padding: "4px 12px", borderRadius: 6, cursor: "pointer",
+                    border: !showNormal ? "0.5px solid rgba(0,0,0,0.18)" : "none",
+                    background: !showNormal ? "#f5f4f0" : "#2D4FA3", color: !showNormal ? "#5f5e5a" : "#fff",
+                    fontWeight: 500,
+                  }}>
+                  Normal txns with this item ({barcodeInNormalTxns})
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Table */}
+        <div style={{ overflowX: "auto" }}>
+          <table className="tx-table">
+            <thead>
+              <tr>
+                <th>Alert ID</th>
+                <th>Date / Time</th>
+                <th>Alert Type</th>
+                <th>Issued Items</th>
+                {activeBarcode && <th>Barcode</th>}
+                <th>Action</th>
+                <th>Video</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.length === 0 && (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: "center", color: "#aaa", padding: "28px 0" }}>
+                    No transactions found for this barcode in {showNormal ? "normal" : "flagged"} records.
+                  </td>
+                </tr>
+              )}
+              {paginated.map((tx, i) => {
+                const ac = actionColor[tx.action] || actionColor["Normal"];
+                return (
+                  <tr key={i}>
+                    <td>
+                      <span style={{ color: "#3B5CF6", fontWeight: 500, cursor: "pointer" }}>
+                        {tx.action === "Normal" ? "—" : (
+                          <>
+                            {tx.action === "No Intervention" && (
+                              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#E24B4A", marginRight: 5, verticalAlign: "middle" }}/>
+                            )}
+                            {tx.id}
+                          </>
+                        )}
+                      </span>
+                      {tx.action === "Normal" && (
+                        <span style={{ color: "#3B5CF6", fontWeight: 500 }}>{tx.id}</span>
+                      )}
+                    </td>
+                    <td style={{ color: "#5f5e5a", whiteSpace: "nowrap" }}>{tx.datetime}</td>
+                    <td>
+                      {tx.alertType ? (
+                        <span className={`badge ${tx.alertType === "Item Left" ? "badge-red" : "badge-orange"}`}>
+                          {tx.alertType}
+                        </span>
+                      ) : (
+                        <span className="badge badge-grey">—</span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="thumb-row">
+                        {Array.from({ length: Math.min(tx.itemCount, 3) }, (_, k) => (
+                          <div key={k} className="thumb">IMG</div>
+                        ))}
+                      </div>
+                    </td>
+                    {activeBarcode && (
+                      <td>
+                        {tx.barcode ? (
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 500, color: "#2D4FA3" }}>{tx.barcode}</div>
+                            <div style={{ fontSize: 10, color: "#888780" }}>{tx.barcodeName}</div>
+                          </div>
+                        ) : (
+                          <span style={{ color: "#ccc", fontSize: 11 }}>—</span>
+                        )}
+                      </td>
+                    )}
+                    <td>
+                      <span className="badge" style={{ background: ac.bg, color: ac.color }}>
+                        {tx.action}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="vid-thumb">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <circle cx="8" cy="8" r="7.5" stroke="#999" strokeWidth="1"/>
+                          <polygon points="6.5,5 11.5,8 6.5,11" fill="#999"/>
+                        </svg>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, fontSize: 12, color: "#888780" }}>
+            <span>Showing {(page-1)*PAGE_SIZE + 1}–{Math.min(page*PAGE_SIZE, displayTxns.length)} of {displayTxns.length} (demo sample)</span>
+            <div style={{ display: "flex", gap: 4 }}>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button key={i} onClick={() => setPage(i+1)}
+                  style={{
+                    width: 28, height: 28, borderRadius: 6, border: "0.5px solid rgba(0,0,0,0.18)",
+                    background: page === i+1 ? "#2D4FA3" : "#fff",
+                    color: page === i+1 ? "#fff" : "#5f5e5a",
+                    cursor: "pointer", fontSize: 12,
+                  }}>
+                  {i+1}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginTop: 10, fontSize: 11, color: "#ccc", textAlign: "right" }}>
+          Showing demo sample · full data connects to API
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Dashboard ────────────────────────────────────────────────
 function Dashboard() {
   const [sk, setSk] = useState("s1");
   const [pk, setPk] = useState("q1");
+  const [modal, setModal] = useState(null); // null | "all-flagged" | "no-intervention"
   const s = STORES[sk], p = PERIODS[pk];
   const pStaff = pct(p.staff, p.flag);
   const pCust  = pct(p.cust,  p.flag);
@@ -148,247 +571,237 @@ function Dashboard() {
   const recPct  = (parseInt(p.rec.replace(/[$,]/g,""))  / p.qtlySales * 100).toFixed(1) + "%";
   const riskPct = (parseInt(p.risk.replace(/[$,]/g,"")) / p.qtlySales * 100).toFixed(1) + "%";
 
-  // ── col2→col3: left bands proportional to flag, within col2 red card y=50 h=280
   const c2Top = 50, c2H = 280;
   const staffH = c2H * (p.staff / p.flag);
   const custH  = c2H * (p.cust  / p.flag);
-  const s2_staffT = c2Top,              s2_staffB = c2Top + staffH;
-  const s2_custT  = s2_staffB,          s2_custB  = s2_staffB + custH;
-  const s2_noneT  = s2_custB,           s2_noneB  = c2Top + c2H; // =330
+  const s2_staffT = c2Top,     s2_staffB = c2Top + staffH;
+  const s2_custT  = s2_staffB, s2_custB  = s2_staffB + custH;
+  const s2_noneT  = s2_custB,  s2_noneB  = c2Top + c2H;
 
   return (
-    <div style={{ background: "#fff", borderRadius: 16, padding: "22px 26px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+    <>
+      {modal && (
+        <TxModal
+          mode={modal}
+          periodKey={pk}
+          period={p}
+          onClose={() => setModal(null)}
+        />
+      )}
 
-      {/* ── filters ── */}
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 11, color: "#888780" }}>Time period</span>
-          <select value={pk} onChange={e => setPk(e.target.value)}
-            style={{ fontSize: 12, padding: "5px 10px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#1a1a18", cursor: "pointer" }}>
-            <option value="q1">Q1 2025 (Jan – Mar)</option>
-            <option value="q2">Q2 2025 (Apr – Jun)</option>
-            <option value="q3">Q3 2025 (Jul – Sep)</option>
-            <option value="q4">Q4 2025 (Oct – Dec)</option>
-          </select>
-        </div>
-        <div style={{ width: 0.5, height: 20, background: "rgba(0,0,0,0.12)" }} />
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 11, color: "#888780" }}>Store</span>
-          <select value={sk} onChange={e => setSk(e.target.value)}
-            style={{ fontSize: 12, padding: "5px 10px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#1a1a18", cursor: "pointer" }}>
-            <option value="s1">Downtown Store</option>
-            <option value="s2">Westside Store</option>
-            <option value="s3">Eastgate Store</option>
-          </select>
-        </div>
-      </div>
+      <div style={{ background: "#fff", borderRadius: 16, padding: "22px 26px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
 
-      {/* ── summary bar ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, gap: 16 }}>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {[["SCO lanes", s.sco + " units"],
-            ["Quarterly transactions", fmt(p.total) + " txns"],
-            ["Quarterly items scanned", fmt(p.normalItems + p.flagItems) + " items"],
-            ["Quarterly total sales", "$" + p.qtlySales.toLocaleString()]
-          ].map(([l, v]) => (
-            <div key={l} style={{ background: "#f5f4f0", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "7px 14px" }}>
-              <div style={{ fontSize: 11, color: "#888780", marginBottom: 2 }}>{l}</div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: "#1a1a18" }}>{v}</div>
+        {/* ── filters ── */}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 11, color: "#888780" }}>Time period</span>
+            <select value={pk} onChange={e => setPk(e.target.value)}
+              style={{ fontSize: 12, padding: "5px 10px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#1a1a18", cursor: "pointer" }}>
+              <option value="q1">Q1 2025 (Jan – Mar)</option>
+              <option value="q2">Q2 2025 (Apr – Jun)</option>
+              <option value="q3">Q3 2025 (Jul – Sep)</option>
+              <option value="q4">Q4 2025 (Oct – Dec)</option>
+            </select>
+          </div>
+          <div style={{ width: 0.5, height: 20, background: "rgba(0,0,0,0.12)" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 11, color: "#888780" }}>Store</span>
+            <select value={sk} onChange={e => setSk(e.target.value)}
+              style={{ fontSize: 12, padding: "5px 10px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#1a1a18", cursor: "pointer" }}>
+              <option value="s1">Downtown Store</option>
+              <option value="s2">Westside Store</option>
+              <option value="s3">Eastgate Store</option>
+            </select>
+          </div>
+        </div>
+
+        {/* ── summary bar ── */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, gap: 16 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {[["SCO lanes", s.sco + " units"],
+              ["Quarterly transactions", fmt(p.total) + " txns"],
+              ["Quarterly items scanned", fmt(p.normalItems + p.flagItems) + " items"],
+              ["Quarterly total sales", "$" + p.qtlySales.toLocaleString()]
+            ].map(([l, v]) => (
+              <div key={l} style={{ background: "#f5f4f0", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "7px 14px" }}>
+                <div style={{ fontSize: 11, color: "#888780", marginBottom: 2 }}>{l}</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#1a1a18" }}>{v}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 500, color: "#1a1a18" }}>{s.name}</div>
+            <div style={{ fontSize: 11, color: "#888780", marginTop: 2 }}>{p.label}</div>
+            <button style={{ marginTop: 6, fontSize: 11, padding: "4px 11px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#888780", cursor: "pointer" }}>
+              Export report ↓
+            </button>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
+          Transaction integrity flow — AI scan miss detection
+        </div>
+
+        <div style={{ background: "#fff", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: "14px 16px 10px", marginBottom: 12 }}>
+          {/* Click hint */}
+          <div style={{ fontSize: 10, color: "#B4B2A9", marginBottom: 6, textAlign: "right" }}>
+            💡 Click <strong style={{ color: "#A32D2D" }}>AI-flagged</strong> or <strong style={{ color: "#A32D2D" }}>No intervention</strong> cards to drill down
+          </div>
+          <svg width="100%" viewBox="0 0 940 540" style={{ display: "block" }}>
+
+            <T fontSize="10" fill="#B4B2A9" x="64"  y="18" textAnchor="middle">① Volume</T>
+            <T fontSize="10" fill="#B4B2A9" x="264" y="18" textAnchor="middle">② AI detection</T>
+            <T fontSize="10" fill="#B4B2A9" x="515" y="18" textAnchor="middle">③ Response</T>
+            <T fontSize="10" fill="#B4B2A9" x="746" y="18" textAnchor="middle">④ $</T>
+
+            {/* col1→col2 flows */}
+            <path d={`M114 30 C148 30 148 50 174 50 L174 330 C148 330 148 310 114 310 Z`}
+                  fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+            <path d={`M114 340 C148 340 148 360 174 360 L174 450 C148 450 148 430 114 430 Z`}
+                  fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
+
+            {/* Col1 on top */}
+            <rect x="14" y="30" width="100" height="400" rx="8" fill="#DEDAD4" stroke="#C8C5BE" strokeWidth="0.5"/>
+            <T fontSize="11" fill="#6B6966" x="64" y="76"  textAnchor="middle">Total SCO</T>
+            <T fontSize="11" fill="#6B6966" x="64" y="90"  textAnchor="middle">transactions</T>
+            <T fontSize="19" fontWeight="500" fill="#3d3d3a" x="64" y="138" textAnchor="middle">{fmt(p.total)}</T>
+            <T fontSize="10" fill="#9c9a92" x="64" y="154" textAnchor="middle">{p.short} total</T>
+
+            {/* ── Col2 AI-flagged — CLICKABLE ── */}
+            <g className="clickable-card" onClick={() => setModal("all-flagged")} style={{ cursor: "pointer" }}>
+              <rect x="174" y="50" width="180" height="280" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+              {/* "click to view" indicator */}
+              <rect x="314" y="58" width="32" height="14" rx="3" fill="#E24B4A" opacity="0.15"/>
+              <T fontSize="8" fill="#A32D2D" x="330" y="68" textAnchor="middle">↗ list</T>
+              <T fontSize="10" fontWeight="500" fill="#791F1F" x="264" y="72" textAnchor="middle">AI-flagged scan miss</T>
+              <line x1="186" y1="80" x2="342" y2="80" stroke="#F09595" strokeWidth="0.5"/>
+              <T fontSize="13" fontWeight="500" fill="#A32D2D" x="204" y="155" textAnchor="middle">{fmt(p.flag)}</T>
+              <T fontSize="9"  fill="#A32D2D" x="204" y="169" textAnchor="middle">txns</T>
+              <T fontSize="9"  fill="#A32D2D" x="342" y="155" textAnchor="end">{pct(p.flag, p.total)} of total</T>
+              <T fontSize="10" fontWeight="500" fill="#C4785A" x="204" y="255" textAnchor="middle">{fmt(p.flagItems)}</T>
+              <T fontSize="8"  fill="#C4785A" x="204" y="269" textAnchor="middle">items</T>
+              <T fontSize="8"  fill="#C4785A" x="342" y="255" textAnchor="end">{pct(p.flagItems, p.normalItems + p.flagItems)} of total</T>
+            </g>
+
+            {/* Col2 Normal */}
+            <rect x="174" y="360" width="180" height="90" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
+            <T fontSize="10" fill="#888780" x="264" y="380" textAnchor="middle">Normal transactions</T>
+            <line x1="186" y1="388" x2="342" y2="388" stroke="#D3D1C7" strokeWidth="0.5"/>
+            <T fontSize="12" fontWeight="500" fill="#888780" x="204" y="406" textAnchor="middle">{fmt(p.normal)}</T>
+            <T fontSize="9"  fill="#888780" x="204" y="418" textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#888780" x="342" y="406" textAnchor="end">{pct(p.normal, p.total)} of total</T>
+            <T fontSize="10" fontWeight="500" fill="#6B6966" x="204" y="430" textAnchor="middle">{fmt(p.normalItems)}</T>
+            <T fontSize="8"  fill="#6B6966" x="204" y="441" textAnchor="middle">items</T>
+            <T fontSize="8"  fill="#6B6966" x="342" y="430" textAnchor="end">{pct(p.normalItems, p.normalItems + p.flagItems)} of total</T>
+
+            {/* col2→col3 flows */}
+            <path d={sankeyPath(354, s2_staffT, s2_staffB, 424, 85,  235)} fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
+            <path d={sankeyPath(354, s2_custT,  s2_custB,  424, 245, 355)} fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
+            <path d={sankeyPath(354, s2_noneT,  s2_noneB,  424, 365, 465)} fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+
+            {/* Col3 Staff */}
+            <rect x="424" y="85" width="182" height="150" rx="8" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
+            <T fontSize="10" fontWeight="500" fill="#633806" x="515" y="106" textAnchor="middle">Staff rescan</T>
+            <line x1="436" y1="114" x2="594" y2="114" stroke="#FAC775" strokeWidth="0.5"/>
+            <T fontSize="12" fontWeight="500" fill="#854F0B" x="452" y="148" textAnchor="middle">{fmt(p.staff)}</T>
+            <T fontSize="9"  fill="#854F0B" x="452" y="160" textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#854F0B" x="594" y="148" textAnchor="end">{pStaff} of flagged</T>
+            <T fontSize="10" fontWeight="500" fill="#BA7517" x="452" y="200" textAnchor="middle">{fmt(p.staffItems)}</T>
+            <T fontSize="8"  fill="#BA7517" x="452" y="212" textAnchor="middle">items</T>
+            <T fontSize="8"  fill="#BA7517" x="594" y="200" textAnchor="end">{pct(p.staffItems, p.flagItems)} of flagged</T>
+
+            {/* Col3 Customer */}
+            <rect x="424" y="245" width="182" height="110" rx="8" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
+            <T fontSize="10" fontWeight="500" fill="#085041" x="515" y="264" textAnchor="middle">Customer rescan</T>
+            <line x1="436" y1="272" x2="594" y2="272" stroke="#9FE1CB" strokeWidth="0.5"/>
+            <T fontSize="12" fontWeight="500" fill="#0F6E56" x="452" y="290" textAnchor="middle">{fmt(p.cust)}</T>
+            <T fontSize="9"  fill="#0F6E56" x="452" y="302" textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#0F6E56" x="594" y="290" textAnchor="end">{pCust} of flagged</T>
+            <T fontSize="10" fontWeight="500" fill="#1D9E75" x="452" y="316" textAnchor="middle">{fmt(p.custItems)}</T>
+            <T fontSize="8"  fill="#1D9E75" x="452" y="327" textAnchor="middle">items</T>
+            <T fontSize="8"  fill="#1D9E75" x="594" y="316" textAnchor="end">{pct(p.custItems, p.flagItems)} of flagged</T>
+
+            {/* ── Col3 No Intervention — CLICKABLE ── */}
+            <g className="clickable-card" onClick={() => setModal("no-intervention")} style={{ cursor: "pointer" }}>
+              <rect x="424" y="365" width="182" height="100" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+              <rect x="564" y="373" width="32" height="14" rx="3" fill="#E24B4A" opacity="0.15"/>
+              <T fontSize="8" fill="#A32D2D" x="580" y="383" textAnchor="middle">↗ list</T>
+              <T fontSize="10" fontWeight="500" fill="#791F1F" x="515" y="384" textAnchor="middle">No intervention</T>
+              <line x1="436" y1="392" x2="594" y2="392" stroke="#F09595" strokeWidth="0.5"/>
+              <T fontSize="12" fontWeight="500" fill="#A32D2D" x="452" y="410" textAnchor="middle">{fmt(p.none)}</T>
+              <T fontSize="9"  fill="#A32D2D" x="452" y="422" textAnchor="middle">txns</T>
+              <T fontSize="9"  fill="#A32D2D" x="594" y="410" textAnchor="end">{pNone} of flagged</T>
+              <T fontSize="10" fontWeight="500" fill="#C4785A" x="452" y="436" textAnchor="middle">{fmt(p.noneItems)}</T>
+              <T fontSize="8"  fill="#C4785A" x="452" y="447" textAnchor="middle">items</T>
+              <T fontSize="8"  fill="#C4785A" x="594" y="436" textAnchor="end">{pct(p.noneItems, p.flagItems)} of flagged</T>
+            </g>
+
+            {/* col3→col4 flows */}
+            <path d={sankeyPath(606, 85,  355, 666, 105, 320)} fill="#EAF3DE" stroke="#97C459" strokeWidth="1.5"/>
+            <path d={sankeyPath(606, 365, 465, 666, 345, 460)} fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
+
+            {/* Col4 Recovered */}
+            <rect x="666" y="105" width="160" height="215" rx="6" fill="#EAF3DE" stroke="#639922" strokeWidth="1.5"/>
+            <T fontSize="10" fontWeight="500" fill="#27500A" x="746" y="126" textAnchor="middle">Recovered revenue</T>
+            <T fontSize="9"  fill="#639922" x="746" y="139" textAnchor="middle">{recPct} of quarterly sales</T>
+            <T fontSize="13" fontWeight="500" fill="#3B6D11" x="746" y="162" textAnchor="middle">{p.rec}</T>
+            <line x1="678" y1="172" x2="814" y2="172" stroke="#97C459" strokeWidth="0.5"/>
+            <T fontSize="12" fontWeight="500" fill="#3B6D11" x="686" y="192" textAnchor="start">{fmt(p.recTxns)}</T>
+            <T fontSize="9"  fill="#639922" x="686" y="204" textAnchor="start">txns</T>
+            <T fontSize="10" fontWeight="500" fill="#639922" x="814" y="192" textAnchor="end">{fmt(p.recItems)}</T>
+            <T fontSize="8"  fill="#639922" x="814" y="204" textAnchor="end">items</T>
+
+            {/* Col4 At Risk */}
+            <rect x="666" y="345" width="160" height="115" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
+            <T fontSize="10" fontWeight="500" fill="#791F1F" x="746" y="364" textAnchor="middle">At risk</T>
+            <T fontSize="9"  fill="#A32D2D" x="746" y="376" textAnchor="middle">{riskPct} of quarterly sales</T>
+            <T fontSize="12" fontWeight="500" fill="#A32D2D" x="746" y="396" textAnchor="middle">{p.risk}</T>
+            <line x1="678" y1="406" x2="814" y2="406" stroke="#F09595" strokeWidth="0.5"/>
+            <T fontSize="11" fontWeight="500" fill="#A32D2D" x="686" y="422" textAnchor="start">{fmt(p.none)}</T>
+            <T fontSize="9"  fill="#A32D2D" x="686" y="434" textAnchor="start">txns</T>
+            <T fontSize="10" fontWeight="500" fill="#C4785A" x="814" y="422" textAnchor="end">{fmt(p.noneItems)}</T>
+            <T fontSize="8"  fill="#C4785A" x="814" y="434" textAnchor="end">items</T>
+
+          </svg>
+        </div>
+
+        {/* ── AI insights ── */}
+        <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>AI insights</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div style={{ borderRadius: 8, padding: "12px 14px", borderLeft: "3px solid #639922", background: "#EAF3DE" }}>
+            <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#3B6D11", marginBottom: 5 }}>What AI recovered</div>
+            <div style={{ fontSize: 12, lineHeight: 1.6, color: "#27500A" }}>
+              Staff and customer rescans together recovered <strong>{p.rec}</strong> in {p.short} — across <strong>{fmt(p.recTxns)} transactions</strong> and {fmt(p.recItems)} items flagged by AI. That's revenue that would otherwise have walked out the door undetected.
             </div>
-          ))}
-        </div>
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 500, color: "#1a1a18" }}>{s.name}</div>
-          <div style={{ fontSize: 11, color: "#888780", marginTop: 2 }}>{p.label}</div>
-          <button style={{ marginTop: 6, fontSize: 11, padding: "4px 11px", border: "0.5px solid rgba(0,0,0,0.22)", borderRadius: 6, background: "#fff", color: "#888780", cursor: "pointer" }}>
-            Export report ↓
-          </button>
-        </div>
-      </div>
-
-      <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
-        Transaction integrity flow — AI scan miss detection
-      </div>
-
-      <div style={{ background: "#fff", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: "14px 16px 10px", marginBottom: 12 }}>
-        <svg width="100%" viewBox="0 0 940 540" style={{ display: "block" }}>
-
-          {/* column headers */}
-          <T fontSize="10" fill="#B4B2A9" x="64"  y="18" textAnchor="middle">① Volume</T>
-          <T fontSize="10" fill="#B4B2A9" x="264" y="18" textAnchor="middle">② AI detection</T>
-          <T fontSize="10" fill="#B4B2A9" x="515" y="18" textAnchor="middle">③ Response</T>
-          <T fontSize="10" fill="#B4B2A9" x="746" y="18" textAnchor="middle">④ $</T>
-
-          {/* ── col1→col2 flows drawn FIRST (col1 card renders on top) ── */}
-
-          {/* Red flow: tilted left→right, right edge flush with col2 card (x=174)
-              Left:  top=30  bottom=310  (20px above right edge → downward tilt)
-              Right: top=50  bottom=330  (col2 red card exact bounds) */}
-          <path
-            d={`M114 30 C148 30 148 50 174 50 L174 330 C148 330 148 310 114 310 Z`}
-            fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"
-          />
-
-          {/* Grey flow: tilted left→right, right edge flush with col2 grey card (x=174)
-              Left:  top=340 bottom=430
-              Right: top=360 bottom=450  (col2 grey card exact bounds) */}
-          <path
-            d={`M114 340 C148 340 148 360 174 360 L174 450 C148 450 148 430 114 430 Z`}
-            fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"
-          />
-
-          {/* ── Col1 drawn ON TOP of flows ──
-              x=14 y=30 w=100 h=400 bottom=430 */}
-          <rect x="14" y="30" width="100" height="400" rx="8" fill="#DEDAD4" stroke="#C8C5BE" strokeWidth="0.5"/>
-          <T fontSize="11" fill="#6B6966" x="64" y="76"  textAnchor="middle">Total SCO</T>
-          <T fontSize="11" fill="#6B6966" x="64" y="90"  textAnchor="middle">transactions</T>
-          <T fontSize="19" fontWeight="500" fill="#3d3d3a" x="64" y="138" textAnchor="middle">{fmt(p.total)}</T>
-          <T fontSize="10" fill="#9c9a92" x="64" y="154" textAnchor="middle">{p.short} total</T>
-
-          {/* ── Col2 AI-flagged: x=174 y=50 w=180 h=280 bottom=330 ── */}
-          <rect x="174" y="50" width="180" height="280" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
-          <T fontSize="10" fontWeight="500" fill="#791F1F" x="264" y="72"  textAnchor="middle">AI-flagged scan miss</T>
-          <line x1="186" y1="80" x2="342" y2="80" stroke="#F09595" strokeWidth="0.5"/>
-          {/* txns group: upper half of card (~y=155) */}
-          <T fontSize="13" fontWeight="500" fill="#A32D2D" x="204" y="155" textAnchor="middle">{fmt(p.flag)}</T>
-          <T fontSize="9"  fill="#A32D2D"               x="204" y="169" textAnchor="middle">txns</T>
-          <T fontSize="9"  fill="#A32D2D"               x="342" y="155" textAnchor="end">{pct(p.flag, p.total)} of total</T>
-          {/* items group: lower half of card (~y=255) */}
-          <T fontSize="10" fontWeight="500" fill="#C4785A" x="204" y="255" textAnchor="middle">{fmt(p.flagItems)}</T>
-          <T fontSize="8"  fill="#C4785A"               x="204" y="269" textAnchor="middle">items</T>
-          <T fontSize="8"  fill="#C4785A"               x="342" y="255" textAnchor="end">{pct(p.flagItems, p.normalItems + p.flagItems)} of total</T>
-
-          {/* ── Col2 Normal: x=174 y=360 w=180 h=90 bottom=450 ── */}
-          <rect x="174" y="360" width="180" height="90" rx="8" fill="#F5F4F0" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="10" fill="#888780" x="264" y="380" textAnchor="middle">Normal transactions</T>
-          <line x1="186" y1="388" x2="342" y2="388" stroke="#D3D1C7" strokeWidth="0.5"/>
-          <T fontSize="12" fontWeight="500" fill="#888780" x="204" y="406" textAnchor="middle">{fmt(p.normal)}</T>
-          <T fontSize="9"  fill="#888780"               x="204" y="418" textAnchor="middle">txns</T>
-          <T fontSize="9"  fill="#888780"               x="342" y="406" textAnchor="end">{pct(p.normal, p.total)} of total</T>
-          <T fontSize="10" fontWeight="500" fill="#6B6966" x="204" y="430" textAnchor="middle">{fmt(p.normalItems)}</T>
-          <T fontSize="8"  fill="#6B6966"               x="204" y="441" textAnchor="middle">items</T>
-          <T fontSize="8"  fill="#6B6966"               x="342" y="430" textAnchor="end">{pct(p.normalItems, p.normalItems + p.flagItems)} of total</T>
-
-          {/* ── col2→col3 Sankey flows ──
-              Left edge x=354, bands proportional within col2 red card (y=50 h=280)
-              Right edge x=424, bands = col3 card exact top/bottom
-              Staff → y=85–235, Cust → y=245–355, None → y=365–465 */}
-          <path d={sankeyPath(354, s2_staffT, s2_staffB, 424, 85,  235)}
-                fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
-          <path d={sankeyPath(354, s2_custT,  s2_custB,  424, 245, 355)}
-                fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
-          <path d={sankeyPath(354, s2_noneT,  s2_noneB,  424, 365, 465)}
-                fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
-
-          {/* ── Col3 Staff rescan: x=424 y=85 w=182 h=150 bottom=235 ── */}
-          <rect x="424" y="85" width="182" height="150" rx="8" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5"/>
-          <T fontSize="10" fontWeight="500" fill="#633806" x="515" y="106" textAnchor="middle">Staff rescan</T>
-          <line x1="436" y1="114" x2="594" y2="114" stroke="#FAC775" strokeWidth="0.5"/>
-          {/* txns: upper, items: lower — spread across card height */}
-          <T fontSize="12" fontWeight="500" fill="#854F0B" x="452" y="148" textAnchor="middle">{fmt(p.staff)}</T>
-          <T fontSize="9"  fill="#854F0B"               x="452" y="160" textAnchor="middle">txns</T>
-          <T fontSize="9"  fill="#854F0B"               x="594" y="148" textAnchor="end">{pStaff} of flagged</T>
-          <T fontSize="10" fontWeight="500" fill="#BA7517" x="452" y="200" textAnchor="middle">{fmt(p.staffItems)}</T>
-          <T fontSize="8"  fill="#BA7517"               x="452" y="212" textAnchor="middle">items</T>
-          <T fontSize="8"  fill="#BA7517"               x="594" y="200" textAnchor="end">{pct(p.staffItems, p.flagItems)} of flagged</T>
-
-          {/* ── Col3 Customer rescan: x=424 y=245 w=182 h=110 bottom=355 ── */}
-          <rect x="424" y="245" width="182" height="110" rx="8" fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
-          <T fontSize="10" fontWeight="500" fill="#085041" x="515" y="264" textAnchor="middle">Customer rescan</T>
-          <line x1="436" y1="272" x2="594" y2="272" stroke="#9FE1CB" strokeWidth="0.5"/>
-          <T fontSize="12" fontWeight="500" fill="#0F6E56" x="452" y="290" textAnchor="middle">{fmt(p.cust)}</T>
-          <T fontSize="9"  fill="#0F6E56"               x="452" y="302" textAnchor="middle">txns</T>
-          <T fontSize="9"  fill="#0F6E56"               x="594" y="290" textAnchor="end">{pCust} of flagged</T>
-          <T fontSize="10" fontWeight="500" fill="#1D9E75" x="452" y="316" textAnchor="middle">{fmt(p.custItems)}</T>
-          <T fontSize="8"  fill="#1D9E75"               x="452" y="327" textAnchor="middle">items</T>
-          <T fontSize="8"  fill="#1D9E75"               x="594" y="316" textAnchor="end">{pct(p.custItems, p.flagItems)} of flagged</T>
-
-          {/* ── Col3 No intervention: x=424 y=365 w=182 h=100 bottom=465 ── */}
-          <rect x="424" y="365" width="182" height="100" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
-          <T fontSize="10" fontWeight="500" fill="#791F1F" x="515" y="384" textAnchor="middle">No intervention</T>
-          <line x1="436" y1="392" x2="594" y2="392" stroke="#F09595" strokeWidth="0.5"/>
-          <T fontSize="12" fontWeight="500" fill="#A32D2D" x="452" y="410" textAnchor="middle">{fmt(p.none)}</T>
-          <T fontSize="9"  fill="#A32D2D"               x="452" y="422" textAnchor="middle">txns</T>
-          <T fontSize="9"  fill="#A32D2D"               x="594" y="410" textAnchor="end">{pNone} of flagged</T>
-          <T fontSize="10" fontWeight="500" fill="#C4785A" x="452" y="436" textAnchor="middle">{fmt(p.noneItems)}</T>
-          <T fontSize="8"  fill="#C4785A"               x="452" y="447" textAnchor="middle">items</T>
-          <T fontSize="8"  fill="#C4785A"               x="594" y="436" textAnchor="end">{pct(p.noneItems, p.flagItems)} of flagged</T>
-
-          {/* ── col3→col4 Sankey flows ──
-              Left edge x=606:
-                Green (staff+cust): y=85–355
-                Red   (none):       y=365–465
-              Right edge x=666:
-                Green tgt: y=105–320  (col4 green card)
-                Red   tgt: y=345–460  (col4 red card) */}
-          <path d={sankeyPath(606, 85,  355, 666, 105, 320)}
-                fill="#EAF3DE" stroke="#97C459" strokeWidth="1.5"/>
-          <path d={sankeyPath(606, 365, 465, 666, 345, 460)}
-                fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
-
-          {/* ── Col4 Recovered revenue: x=666 y=105 w=160 h=215 bottom=320 center=746 ── */}
-          <rect x="666" y="105" width="160" height="215" rx="6" fill="#EAF3DE" stroke="#639922" strokeWidth="1.5"/>
-          <T fontSize="10" fontWeight="500" fill="#27500A" x="746" y="126" textAnchor="middle">Recovered revenue</T>
-          <T fontSize="9"  fill="#639922"               x="746" y="139" textAnchor="middle">{recPct} of quarterly sales</T>
-          <T fontSize="13" fontWeight="500" fill="#3B6D11" x="746" y="162" textAnchor="middle">{p.rec}</T>
-          <line x1="678" y1="172" x2="814" y2="172" stroke="#97C459" strokeWidth="0.5"/>
-          {/* txns left, items right */}
-          <T fontSize="12" fontWeight="500" fill="#3B6D11" x="686" y="192" textAnchor="start">{fmt(p.recTxns)}</T>
-          <T fontSize="9"  fill="#639922"               x="686" y="204" textAnchor="start">txns</T>
-          <T fontSize="10" fontWeight="500" fill="#639922" x="814" y="192" textAnchor="end">{fmt(p.recItems)}</T>
-          <T fontSize="8"  fill="#639922"               x="814" y="204" textAnchor="end">items</T>
-
-          {/* ── Col4 At risk: x=666 y=345 w=160 h=115 bottom=460 center=746 ── */}
-          <rect x="666" y="345" width="160" height="115" rx="6" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1"/>
-          <T fontSize="10" fontWeight="500" fill="#791F1F" x="746" y="364" textAnchor="middle">At risk</T>
-          <T fontSize="9"  fill="#A32D2D"               x="746" y="376" textAnchor="middle">{riskPct} of quarterly sales</T>
-          <T fontSize="12" fontWeight="500" fill="#A32D2D" x="746" y="396" textAnchor="middle">{p.risk}</T>
-          <line x1="678" y1="406" x2="814" y2="406" stroke="#F09595" strokeWidth="0.5"/>
-          {/* txns left, items right */}
-          <T fontSize="11" fontWeight="500" fill="#A32D2D" x="686" y="422" textAnchor="start">{fmt(p.none)}</T>
-          <T fontSize="9"  fill="#A32D2D"               x="686" y="434" textAnchor="start">txns</T>
-          <T fontSize="10" fontWeight="500" fill="#C4785A" x="814" y="422" textAnchor="end">{fmt(p.noneItems)}</T>
-          <T fontSize="8"  fill="#C4785A"               x="814" y="434" textAnchor="end">items</T>
-
-        </svg>
-      </div>
-
-      {/* ── AI insights ── */}
-      <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>AI insights</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-        <div style={{ borderRadius: 8, padding: "12px 14px", borderLeft: "3px solid #639922", background: "#EAF3DE" }}>
-          <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#3B6D11", marginBottom: 5 }}>What AI recovered</div>
-          <div style={{ fontSize: 12, lineHeight: 1.6, color: "#27500A" }}>
-            Staff and customer rescans together recovered <strong>{p.rec}</strong> in {p.short} — across <strong>{fmt(p.recTxns)} transactions</strong> and {fmt(p.recItems)} items flagged by AI. That's revenue that would otherwise have walked out the door undetected.
+          </div>
+          <div style={{ borderRadius: 8, padding: "12px 14px", borderLeft: "3px solid #BA7517", background: "#FAEEDA" }}>
+            <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#854F0B", marginBottom: 5 }}>Opportunity ahead</div>
+            <div style={{ fontSize: 12, lineHeight: 1.6, color: "#633806" }}>
+              <strong>{pNone} of flagged transactions</strong> ({fmt(p.none)} txns) had no follow-up action. Closing this gap could unlock an estimated <strong>${Math.round(parseInt(p.rec.replace(/[$,]/g,"")) * p.none / p.recTxns).toLocaleString()}+ in additional quarterly recovery</strong> for this store — without adding any new hardware.
+            </div>
           </div>
         </div>
-        <div style={{ borderRadius: 8, padding: "12px 14px", borderLeft: "3px solid #BA7517", background: "#FAEEDA" }}>
-          <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#854F0B", marginBottom: 5 }}>Opportunity ahead</div>
-          <div style={{ fontSize: 12, lineHeight: 1.6, color: "#633806" }}>
-            <strong>{pNone} of flagged transactions</strong> ({fmt(p.none)} txns) had no follow-up action. Closing this gap could unlock an estimated <strong>${Math.round(parseInt(p.rec.replace(/[$,]/g,"")) * p.none / p.recTxns).toLocaleString()}+ in additional quarterly recovery</strong> for this store — without adding any new hardware.
+
+        {/* ── Key metrics ── */}
+        <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>Key metrics</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 10, marginBottom: 12 }}>
+          <KpiCard cls="r"  lbl="Scan-miss rate"   val={pct(p.flag, p.total)}          sub={fmt(p.flag) + " txns · " + fmt(p.flagItems) + " items"} />
+          <KpiCard cls="gr" lbl="Rescan rate"       val={pct(p.flag-p.none, p.flag)}    sub={fmt(p.flag-p.none) + " txns rescanned by staff & customer"} />
+          <KpiCard cls="gr" lbl="Revenue recovered" val={p.rec}                         sub={p.short + " · avg $" + (parseInt(p.rec.replace(/[$,]/g,"")) / (p.flag-p.none)).toFixed(2) + " / incident"} />
+          <KpiCard cls="a"  lbl="Revenue at risk"   val={p.risk}                        sub={fmt(p.none) + " unresolved txns · " + pNone + " of flagged"} />
+        </div>
+
+        {/* ── Legend ── */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "0.5px solid rgba(0,0,0,0.1)", paddingTop: 8 }}>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            {[["#C4C2BB","Normal flow"],["#A32D2D","AI-flagged"],["#854F0B","Staff rescan"],["#0F6E56","Customer rescan"],["#3B6D11","Recovered revenue"]].map(([c, l]) => (
+              <LegDot key={l} color={c} label={l} />
+            ))}
           </div>
+          <div style={{ fontSize: 11, color: "#888780", whiteSpace: "nowrap" }}>Powered by <strong>Vision AI</strong> · {p.short}</div>
         </div>
       </div>
-
-      {/* ── Key metrics ── */}
-      <div style={{ fontSize: 11, fontWeight: 500, color: "#888780", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>Key metrics</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 10, marginBottom: 12 }}>
-        <KpiCard cls="r"  lbl="Scan-miss rate"   val={pct(p.flag, p.total)}          sub={fmt(p.flag) + " txns · " + fmt(p.flagItems) + " items"} />
-        <KpiCard cls="gr" lbl="Rescan rate"       val={pct(p.flag-p.none, p.flag)}    sub={fmt(p.flag-p.none) + " txns rescanned by staff & customer"} />
-        <KpiCard cls="gr" lbl="Revenue recovered" val={p.rec}                         sub={p.short + " · avg $" + (parseInt(p.rec.replace(/[$,]/g,"")) / (p.flag-p.none)).toFixed(2) + " / incident"} />
-        <KpiCard cls="a"  lbl="Revenue at risk"   val={p.risk}                        sub={fmt(p.none) + " unresolved txns · " + pNone + " of flagged"} />
-      </div>
-
-      {/* ── Legend ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "0.5px solid rgba(0,0,0,0.1)", paddingTop: 8 }}>
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          {[["#C4C2BB","Normal flow"],["#A32D2D","AI-flagged"],["#854F0B","Staff rescan"],["#0F6E56","Customer rescan"],["#3B6D11","Recovered revenue"]].map(([c, l]) => (
-            <LegDot key={l} color={c} label={l} />
-          ))}
-        </div>
-        <div style={{ fontSize: 11, color: "#888780", whiteSpace: "nowrap" }}>Powered by <strong>Vision AI</strong> · {p.short}</div>
-      </div>
-    </div>
+    </>
   );
 }
 
