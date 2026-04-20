@@ -644,7 +644,7 @@ function Dashboard() {
 
         <div style={{ background: "#fff", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: "14px 16px 10px", marginBottom: 12 }}>
           {/* Click hint */}
-          <div style={{ fontSize: 10, color: "#B4B2A9", marginBottom: 6, textAlign: "right" }}>
+          <div style={{ fontSize: 13, color: "#B4B2A9", marginBottom: 6, textAlign: "right" }}>
             💡 Click <strong style={{ color: "#A32D2D" }}>AI-flagged</strong> or <strong style={{ color: "#A32D2D" }}>No intervention</strong> cards to drill down
           </div>
           <svg width="100%" viewBox="0 0 800 430" style={{ display: "block" }}>
@@ -696,12 +696,12 @@ function Dashboard() {
               <rect x="156" y="46" width="170" height="268" rx="8" fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
               <rect x="286" y="54" width="32" height="14" rx="3" fill="#E24B4A" opacity="0.15"/>
               <T fontSize="8" fill="#A32D2D" x="302" y="64" textAnchor="middle">↗ list</T>
-              <T fontSize="12" fontWeight="500" fill="#791F1F" x="241" y="68" textAnchor="middle">AI-flagged scan miss</T>
-              <line x1="166" y1="76" x2="316" y2="76" stroke="#F09595" strokeWidth="0.5"/>
-              <T fontSize="20" fontWeight="500" fill="#A32D2D" x="166" y="152" textAnchor="start">{fmt(p.flag)}</T>
-              <T fontSize="11" fill="#A32D2D"               x="166" y="167" textAnchor="start">txns</T>
-              <T fontSize="18" fontWeight="500" fill="#C4785A" x="256" y="152" textAnchor="start">{fmt(p.flagItems)}</T>
-              <T fontSize="11" fill="#C4785A"               x="256" y="167" textAnchor="start">items</T>
+              <T fontSize="12" fontWeight="500" fill="#791F1F" x="241" y="82" textAnchor="middle">AI-flagged scan miss</T>
+              <line x1="166" y1="90" x2="316" y2="90" stroke="#F09595" strokeWidth="0.5"/>
+              <T fontSize="20" fontWeight="500" fill="#A32D2D" x="166" y="162" textAnchor="start">{fmt(p.flag)}</T>
+              <T fontSize="11" fill="#A32D2D"               x="166" y="177" textAnchor="start">txns</T>
+              <T fontSize="18" fontWeight="500" fill="#C4785A" x="256" y="162" textAnchor="start">{fmt(p.flagItems)}</T>
+              <T fontSize="11" fill="#C4785A"               x="256" y="177" textAnchor="start">items</T>
             </g>
 
             {/* Col2 Normal: x=156 y=332 w=170 h=74 bottom=406 */}
