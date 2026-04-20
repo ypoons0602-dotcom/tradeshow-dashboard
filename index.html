@@ -92,6 +92,84 @@
     display: flex; gap: 10px; align-items: flex-start;
   }
   .barcode-insight .icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+
+  /* Alert Detail Modal */
+  .alert-modal-box {
+    background: #fff; border-radius: 14px; width: 100%; max-width: 1100px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18); position: relative; overflow: hidden;
+  }
+  .alert-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 0.5px solid rgba(0,0,0,0.1);
+  }
+  .alert-modal-body {
+    display: flex; height: 560px;
+  }
+  .alert-video-pane {
+    flex: 1; display: flex; flex-direction: column; background: #1a1a18;
+  }
+  .alert-video-player {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px;
+  }
+  .alert-video-footer {
+    padding: 10px 16px; border-top: 0.5px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .full-tx-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 500; color: #5B8DEF;
+    background: none; border: 0.5px solid rgba(91,141,239,0.4);
+    border-radius: 6px; padding: 5px 14px; cursor: pointer;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .full-tx-btn:hover { background: rgba(91,141,239,0.08); }
+  .alert-side-pane {
+    width: 300px; flex-shrink: 0; border-left: 0.5px solid rgba(0,0,0,0.1);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .timeline-header {
+    padding: 12px 16px; border-bottom: 0.5px solid rgba(0,0,0,0.08);
+    font-size: 11px; font-weight: 500; color: #888780;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .timeline-scroll {
+    flex: 1; overflow-y: auto; padding: 4px 0;
+  }
+  .timeline-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; border-bottom: 0.5px solid rgba(0,0,0,0.05);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-icon {
+    width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #f5f4f0;
+  }
+  .timeline-icon.alert { background: #FCEBEB; }
+  .timeline-info { flex: 1; }
+  .timeline-eye {
+    background: none; border: none; cursor: pointer; color: #C4C2BB; padding: 0;
+    font-size: 14px; line-height: 1;
+  }
+  .timeline-eye:hover { color: #888780; }
+  .alert-section {
+    border-top: 0.5px solid rgba(0,0,0,0.1); padding: 12px 16px;
+  }
+  .alert-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 500; color: #1a1a18; margin-bottom: 10px;
+  }
+  .product-img-box {
+    background: #f5f4f0; border-radius: 6px; border: 0.5px solid rgba(0,0,0,0.08);
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 10px 8px; gap: 5px; flex: 1;
+  }
+  .product-img-placeholder {
+    width: 100%; aspect-ratio: 4/3; background: #e5e4e0;
+    border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #B4B2A9;
+  }
 </style>
 </head>
 <body>
@@ -234,11 +312,209 @@ const sankeyPath = (lx, lyt, lyb, rx, ryt, ryb) => {
           `L${rx} ${ryb}`, `C${mx} ${ryb} ${mx} ${lyb} ${lx} ${lyb}`, "Z"].join(" ");
 };
 
+// ── Alert Detail Modal ────────────────────────────────────────────
+function generateTimeline(alertType, datetime, rand) {
+  const baseTime = datetime ? datetime.split(" ")[1] : "14:00:00";
+  const [h, m, s] = baseTime.split(":").map(Number);
+  const toTime = (offsetSec) => {
+    const total = h * 3600 + m * 60 + s + offsetSec;
+    return [Math.floor(total/3600)%24, Math.floor((total%3600)/60), total%60]
+      .map(v => String(v).padStart(2,"0")).join(":");
+  };
+  const insertCount = 3 + Math.floor(rand() * 3);
+  const events = [];
+  for (let i = 0; i < insertCount; i++) {
+    events.push({ type: "insert", label: "Item Insert", time: toTime(i * 8) });
+  }
+  if (alertType === "Item Left") {
+    events.push({ type: "alert", label: "Item Left", time: toTime(insertCount * 8) });
+  } else {
+    const alertAt = Math.floor(insertCount / 2);
+    events.splice(alertAt, 0, { type: "alert", label: "Item Switched", time: toTime(alertAt * 8) });
+    events.push({ type: "insert", label: "Item Insert", time: toTime((insertCount + 1) * 8) });
+    events.push({ type: "alert", label: "Item Switched", time: toTime((insertCount + 2) * 8) });
+  }
+  return events;
+}
+
+function AlertDetailModal({ tx, onClose }) {
+  const rand = seedRand(tx.id.charCodeAt(0) * 13 + tx.id.charCodeAt(1));
+  const timeline = generateTimeline(tx.alertType, tx.datetime, rand);
+  const isSwitch = tx.alertType === "Item Switch";
+
+  return (
+    <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="alert-modal-box">
+
+        {/* Header */}
+        <div className="alert-modal-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span className={`badge ${isSwitch ? "badge-orange" : "badge-red"}`}>
+              {tx.alertType}
+            </span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: "#1a1a18" }}>
+                Alert Details · {tx.datetime}
+              </div>
+              <div style={{ fontSize: 11, color: "#888780", marginTop: 2 }}>
+                Alert ID: {tx.id}
+              </div>
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose} style={{ position: "static" }}>✕</button>
+        </div>
+
+        {/* Body */}
+        <div className="alert-modal-body">
+
+          {/* Left: video pane */}
+          <div className="alert-video-pane">
+            <div className="alert-video-player">
+              <div style={{
+                width: 40, height: 40, borderRadius: "50%",
+                border: "1.5px solid rgba(255,255,255,0.25)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M5.5 4.5L9.5 7L5.5 9.5V4.5Z" fill="rgba(255,255,255,0.4)"/>
+                </svg>
+              </div>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>
+                Video Preparing
+              </span>
+            </div>
+            <div className="alert-video-footer">
+              <button className="full-tx-btn">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                  <rect x="0.5" y="0.5" width="10" height="10" rx="1.5" stroke="#5B8DEF" strokeWidth="1"/>
+                  <polygon points="4,3 8,5.5 4,8" fill="#5B8DEF"/>
+                </svg>
+                Full Transaction
+              </button>
+            </div>
+          </div>
+
+          {/* Right: timeline + alert */}
+          <div className="alert-side-pane">
+
+            {/* Timeline header */}
+            <div className="timeline-header">
+              <span style={{ color: "#1a1a18", fontWeight: 500, fontSize: 12 }}>Transaction Timeline</span>
+              <span style={{ color: "#888780", fontSize: 11 }}>
+                Total Items: {timeline.filter(e => e.type === "insert").length}
+              </span>
+            </div>
+
+            {/* Timeline scroll */}
+            <div className="timeline-scroll">
+              {timeline.map((ev, i) => (
+                <div key={i} className="timeline-item">
+                  <div className={`timeline-icon ${ev.type === "alert" ? "alert" : ""}`}>
+                    {ev.type === "insert" ? (
+                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                        <rect x="1.5" y="2.5" width="10" height="8" rx="1" stroke="#888780" strokeWidth="1"/>
+                        <path d="M4.5 2.5V1.5M8.5 2.5V1.5" stroke="#888780" strokeWidth="0.9" strokeLinecap="round"/>
+                        <path d="M3.5 6.5h6M3.5 8.5h4" stroke="#888780" strokeWidth="0.7" strokeLinecap="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                        <circle cx="6.5" cy="6.5" r="5.5" stroke="#E24B4A" strokeWidth="1"/>
+                        <path d="M6.5 4V7" stroke="#E24B4A" strokeWidth="1.2" strokeLinecap="round"/>
+                        <circle cx="6.5" cy="9" r="0.6" fill="#E24B4A"/>
+                      </svg>
+                    )}
+                  </div>
+                  <div className="timeline-info">
+                    <div style={{
+                      fontSize: 12,
+                      fontWeight: ev.type === "alert" ? 500 : 400,
+                      color: ev.type === "alert" ? "#A32D2D" : "#1a1a18",
+                    }}>{ev.label}</div>
+                    <div style={{ fontSize: 10, color: ev.type === "alert" ? "#C4785A" : "#888780" }}>
+                      {ev.time}
+                    </div>
+                  </div>
+                  {ev.type === "insert" && (
+                    <button className="timeline-eye" title="Preview frame">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <ellipse cx="7" cy="7" rx="5" ry="3.5" stroke="#C4C2BB" strokeWidth="1"/>
+                        <circle cx="7" cy="7" r="1.5" stroke="#C4C2BB" strokeWidth="1"/>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Alert section */}
+            <div className="alert-section">
+              <div className="alert-section-header">
+                <span>Alert</span>
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ cursor: "pointer" }}>
+                  <path d="M2 4.5L6.5 9L11 4.5" stroke="#888780" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+
+              {/* Alert event pill */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "6px 10px", background: "#FCEBEB",
+                border: "0.5px solid #F7C1C1", borderRadius: 6, marginBottom: 10,
+              }}>
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <circle cx="6.5" cy="6.5" r="5.5" stroke="#E24B4A" strokeWidth="1"/>
+                  <path d="M6.5 4V7" stroke="#E24B4A" strokeWidth="1.2" strokeLinecap="round"/>
+                  <circle cx="6.5" cy="9" r="0.6" fill="#E24B4A"/>
+                </svg>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 500, color: "#A32D2D" }}>
+                    {isSwitch ? "Item Switched (1)" : "Item Left (1)"}
+                  </div>
+                  <div style={{ fontSize: 10, color: "#C4785A" }}>{tx.datetime}</div>
+                </div>
+              </div>
+
+              {/* Product images */}
+              <div style={{ display: "flex", gap: 8 }}>
+                {isSwitch ? (
+                  <>
+                    <div className="product-img-box">
+                      <div className="product-img-placeholder">IMG</div>
+                      <div style={{ fontSize: 10, color: "#888780", textAlign: "center", marginTop: 4 }}>
+                        Product Scanned
+                      </div>
+                    </div>
+                    <div className="product-img-box">
+                      <div className="product-img-placeholder">IMG</div>
+                      <div style={{ fontSize: 10, color: "#888780", textAlign: "center", marginTop: 4 }}>
+                        Product Identified
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="product-img-box">
+                    <div className="product-img-placeholder">IMG</div>
+                    <div style={{ fontSize: 10, color: "#888780", textAlign: "center", marginTop: 4 }}>
+                      Product Missed
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TxModal({ mode, periodKey, period, onClose }) {
   const [barcodeInput, setBarcodeInput] = useState("");
   const [activeBarcode, setActiveBarcode] = useState(null);
   const [showNormal, setShowNormal] = useState(false);
   const [page, setPage] = useState(1);
+  const [alertDetail, setAlertDetail] = useState(null);
   const PAGE_SIZE = 8;
 
   const title = mode === "all-flagged"
@@ -297,6 +573,10 @@ function TxModal({ mode, periodKey, period, onClose }) {
   };
 
   return (
+    <>
+      {alertDetail && (
+        <AlertDetailModal tx={alertDetail} onClose={() => setAlertDetail(null)} />
+      )}
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-box">
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -440,16 +720,12 @@ function TxModal({ mode, periodKey, period, onClose }) {
                 return (
                   <tr key={i}>
                     <td>
-                      {tx.action === "Normal" ? (
-                        <span style={{ color: "#3B5CF6", fontWeight: 500 }}>{tx.id}</span>
-                      ) : (
-                        <span style={{ color: "#3B5CF6", fontWeight: 500, cursor: "pointer" }}>
-                          {tx.action === "No Intervention" && (
-                            <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#E24B4A", marginRight: 5, verticalAlign: "middle" }}/>
-                          )}
-                          {tx.id}
-                        </span>
-                      )}
+                      <span style={{ color: "#3B5CF6", fontWeight: 500, cursor: "pointer" }} onClick={() => setAlertDetail(tx)}>
+                        {tx.action === "No Intervention" && (
+                          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#E24B4A", marginRight: 5, verticalAlign: "middle" }}/>
+                        )}
+                        {tx.id}
+                      </span>
                     </td>
                     <td style={{ color: "#5f5e5a", whiteSpace: "nowrap" }}>{tx.datetime}</td>
                     <td>
@@ -486,7 +762,7 @@ function TxModal({ mode, periodKey, period, onClose }) {
                       </span>
                     </td>
                     <td>
-                      <div className="vid-thumb">
+                      <div className="vid-thumb" onClick={() => setAlertDetail(tx)}>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <circle cx="8" cy="8" r="7.5" stroke="#999" strokeWidth="1"/>
                           <polygon points="6.5,5 11.5,8 6.5,11" fill="#999"/>
@@ -525,6 +801,7 @@ function TxModal({ mode, periodKey, period, onClose }) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
