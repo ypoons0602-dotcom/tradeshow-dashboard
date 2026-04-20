@@ -677,12 +677,12 @@ function Dashboard() {
             {/* flow1 labels */}
             <rect x="104" y="157" width="44" height="50" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#A32D2D" x="126" y="166" textAnchor="middle">{pct(p.flag, p.total)}</T>
-            <T fontSize="9"  fill="#A32D2D"               x="126" y="178" textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#A32D2D"               x="126" y="178" textAnchor="middle">trans</T>
             <T fontSize="10" fill="#C4785A"               x="126" y="192" textAnchor="middle">{pct(p.flagItems, p.normalItems+p.flagItems)}</T>
             <T fontSize="9"  fill="#C4785A"               x="126" y="204" textAnchor="middle">items</T>
             <rect x="104" y="347" width="44" height="26" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#888780" x="126" y="357" textAnchor="middle">{pct(p.normal, p.total)}</T>
-            <T fontSize="9"  fill="#888780"               x="126" y="369" textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#888780"               x="126" y="369" textAnchor="middle">trans</T>
 
             {/* Col1 drawn on top */}
             <rect x="12" y="28" width="84" height="360" rx="8" fill="#DEDAD4" stroke="#C8C5BE" strokeWidth="0.5"/>
@@ -699,7 +699,7 @@ function Dashboard() {
               <T fontSize="12" fontWeight="500" fill="#791F1F" x="241" y="82" textAnchor="middle">AI-flagged scan miss</T>
               <line x1="166" y1="90" x2="316" y2="90" stroke="#F09595" strokeWidth="0.5"/>
               <T fontSize="20" fontWeight="500" fill="#A32D2D" x="166" y="162" textAnchor="start">{fmt(p.flag)}</T>
-              <T fontSize="11" fill="#A32D2D"               x="166" y="177" textAnchor="start">txns</T>
+              <T fontSize="11" fill="#A32D2D"               x="166" y="177" textAnchor="start">transactions</T>
               <T fontSize="18" fontWeight="500" fill="#C4785A" x="256" y="162" textAnchor="start">{fmt(p.flagItems)}</T>
               <T fontSize="11" fill="#C4785A"               x="256" y="177" textAnchor="start">items</T>
             </g>
@@ -709,7 +709,7 @@ function Dashboard() {
             <T fontSize="12" fill="#888780" x="241" y="351" textAnchor="middle">Normal transactions</T>
             <line x1="166" y1="359" x2="316" y2="359" stroke="#D3D1C7" strokeWidth="0.5"/>
             <T fontSize="16" fontWeight="500" fill="#888780" x="166" y="378" textAnchor="start">{fmt(p.normal)}</T>
-            <T fontSize="11" fill="#888780"               x="166" y="393" textAnchor="start">txns</T>
+            <T fontSize="11" fill="#888780"               x="166" y="393" textAnchor="start">transactions</T>
             <T fontSize="14" fontWeight="500" fill="#6B6966" x="256" y="378" textAnchor="start">{fmt(p.normalItems)}</T>
             <T fontSize="11" fill="#6B6966"               x="256" y="393" textAnchor="start">items</T>
 
@@ -721,19 +721,19 @@ function Dashboard() {
             {/* flow2 labels — y = (left_center + right_center) / 2 */}
             <rect x="334" y={((s2_staffT+s2_staffB)/2 + 143)/2 - 25} width="44" height="52" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#854F0B" x="356" y={((s2_staffT+s2_staffB)/2 + 143)/2 - 16} textAnchor="middle">{pStaff}</T>
-            <T fontSize="9"  fill="#854F0B"               x="356" y={((s2_staffT+s2_staffB)/2 + 143)/2 - 4}  textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#854F0B"               x="356" y={((s2_staffT+s2_staffB)/2 + 143)/2 - 4}  textAnchor="middle">trans</T>
             <T fontSize="10" fill="#BA7517"               x="356" y={((s2_staffT+s2_staffB)/2 + 143)/2 + 10} textAnchor="middle">{pct(p.staffItems,p.flagItems)}</T>
             <T fontSize="9"  fill="#BA7517"               x="356" y={((s2_staffT+s2_staffB)/2 + 143)/2 + 22} textAnchor="middle">items</T>
 
             <rect x="334" y={((s2_custT+s2_custB)/2 + 267)/2 - 25} width="44" height="52" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#0F6E56" x="356" y={((s2_custT+s2_custB)/2 + 267)/2 - 16} textAnchor="middle">{pCust}</T>
-            <T fontSize="9"  fill="#0F6E56"               x="356" y={((s2_custT+s2_custB)/2 + 267)/2 - 4}  textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#0F6E56"               x="356" y={((s2_custT+s2_custB)/2 + 267)/2 - 4}  textAnchor="middle">trans</T>
             <T fontSize="10" fill="#1D9E75"               x="356" y={((s2_custT+s2_custB)/2 + 267)/2 + 10} textAnchor="middle">{pct(p.custItems,p.flagItems)}</T>
             <T fontSize="9"  fill="#1D9E75"               x="356" y={((s2_custT+s2_custB)/2 + 267)/2 + 22} textAnchor="middle">items</T>
 
             <rect x="334" y={((s2_noneT+s2_noneB)/2 + 364)/2 - 25} width="44" height="52" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#A32D2D" x="356" y={((s2_noneT+s2_noneB)/2 + 364)/2 - 16} textAnchor="middle">{pNone}</T>
-            <T fontSize="9"  fill="#A32D2D"               x="356" y={((s2_noneT+s2_noneB)/2 + 364)/2 - 4}  textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#A32D2D"               x="356" y={((s2_noneT+s2_noneB)/2 + 364)/2 - 4}  textAnchor="middle">trans</T>
             <T fontSize="10" fill="#C4785A"               x="356" y={((s2_noneT+s2_noneB)/2 + 364)/2 + 10} textAnchor="middle">{pct(p.noneItems,p.flagItems)}</T>
             <T fontSize="9"  fill="#C4785A"               x="356" y={((s2_noneT+s2_noneB)/2 + 364)/2 + 22} textAnchor="middle">items</T>
 
@@ -742,7 +742,7 @@ function Dashboard() {
             <T fontSize="12" fontWeight="500" fill="#633806" x="471" y="97"  textAnchor="middle">Staff rescan</T>
             <line x1="396" y1="105" x2="546" y2="105" stroke="#FAC775" strokeWidth="0.5"/>
             <T fontSize="18" fontWeight="500" fill="#854F0B" x="396" y="133" textAnchor="start">{fmt(p.staff)}</T>
-            <T fontSize="11" fill="#854F0B"               x="396" y="148" textAnchor="start">txns</T>
+            <T fontSize="11" fill="#854F0B"               x="396" y="148" textAnchor="start">transactions</T>
             <T fontSize="16" fontWeight="500" fill="#BA7517" x="480" y="133" textAnchor="start">{fmt(p.staffItems)}</T>
             <T fontSize="11" fill="#BA7517"               x="480" y="148" textAnchor="start">items</T>
 
@@ -751,7 +751,7 @@ function Dashboard() {
             <T fontSize="12" fontWeight="500" fill="#085041" x="471" y="242" textAnchor="middle">Customer rescan</T>
             <line x1="396" y1="250" x2="546" y2="250" stroke="#9FE1CB" strokeWidth="0.5"/>
             <T fontSize="18" fontWeight="500" fill="#0F6E56" x="396" y="272" textAnchor="start">{fmt(p.cust)}</T>
-            <T fontSize="11" fill="#0F6E56"               x="396" y="287" textAnchor="start">txns</T>
+            <T fontSize="11" fill="#0F6E56"               x="396" y="287" textAnchor="start">transactions</T>
             <T fontSize="16" fontWeight="500" fill="#1D9E75" x="480" y="272" textAnchor="start">{fmt(p.custItems)}</T>
             <T fontSize="11" fill="#1D9E75"               x="480" y="287" textAnchor="start">items</T>
 
@@ -763,7 +763,7 @@ function Dashboard() {
               <T fontSize="12" fontWeight="500" fill="#791F1F" x="471" y="342" textAnchor="middle">No intervention</T>
               <line x1="396" y1="350" x2="546" y2="350" stroke="#F09595" strokeWidth="0.5"/>
               <T fontSize="18" fontWeight="500" fill="#A32D2D" x="396" y="372" textAnchor="start">{fmt(p.none)}</T>
-              <T fontSize="11" fill="#A32D2D"               x="396" y="387" textAnchor="start">txns</T>
+              <T fontSize="11" fill="#A32D2D"               x="396" y="387" textAnchor="start">transactions</T>
               <T fontSize="16" fontWeight="500" fill="#C4785A" x="480" y="372" textAnchor="start">{fmt(p.noneItems)}</T>
               <T fontSize="11" fill="#C4785A"               x="480" y="387" textAnchor="start">items</T>
             </g>
@@ -775,12 +775,12 @@ function Dashboard() {
             {/* flow3 labels */}
             <rect x="564" y="178" width="44" height="52" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#3B6D11" x="586" y="187" textAnchor="middle">{pct(p.staff+p.cust, p.flag)}</T>
-            <T fontSize="9"  fill="#3B6D11"               x="586" y="199" textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#3B6D11"               x="586" y="199" textAnchor="middle">trans</T>
             <T fontSize="10" fill="#639922"               x="586" y="213" textAnchor="middle">{pct(p.staffItems+p.custItems, p.flagItems)}</T>
             <T fontSize="9"  fill="#639922"               x="586" y="225" textAnchor="middle">items</T>
             <rect x="564" y="338" width="44" height="52" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#A32D2D" x="586" y="347" textAnchor="middle">{pNone}</T>
-            <T fontSize="9"  fill="#A32D2D"               x="586" y="359" textAnchor="middle">txns</T>
+            <T fontSize="9"  fill="#A32D2D"               x="586" y="359" textAnchor="middle">trans</T>
             <T fontSize="10" fill="#C4785A"               x="586" y="373" textAnchor="middle">{pct(p.noneItems,p.flagItems)}</T>
             <T fontSize="9"  fill="#C4785A"               x="586" y="385" textAnchor="middle">items</T>
 
@@ -791,7 +791,7 @@ function Dashboard() {
             <T fontSize="20" fontWeight="500" fill="#3B6D11" x="701" y="158" textAnchor="middle">{p.rec}</T>
             <line x1="628" y1="168" x2="774" y2="168" stroke="#97C459" strokeWidth="0.5"/>
             <T fontSize="18" fontWeight="500" fill="#3B6D11" x="628" y="192" textAnchor="start">{fmt(p.recTxns)}</T>
-            <T fontSize="11" fill="#639922"               x="628" y="207" textAnchor="start">txns</T>
+            <T fontSize="11" fill="#639922"               x="628" y="207" textAnchor="start">transactions</T>
             <T fontSize="16" fontWeight="500" fill="#639922" x="718" y="192" textAnchor="start">{fmt(p.recItems)}</T>
             <T fontSize="11" fill="#639922"               x="718" y="207" textAnchor="start">items</T>
 
@@ -802,7 +802,7 @@ function Dashboard() {
             <T fontSize="20" fontWeight="500" fill="#A32D2D" x="701" y="350" textAnchor="middle">{p.risk}</T>
             <line x1="628" y1="360" x2="774" y2="360" stroke="#F09595" strokeWidth="0.5"/>
             <T fontSize="18" fontWeight="500" fill="#A32D2D" x="628" y="382" textAnchor="start">{fmt(p.none)}</T>
-            <T fontSize="11" fill="#A32D2D"               x="628" y="397" textAnchor="start">txns</T>
+            <T fontSize="11" fill="#A32D2D"               x="628" y="397" textAnchor="start">transactions</T>
             <T fontSize="16" fontWeight="500" fill="#C4785A" x="718" y="382" textAnchor="start">{fmt(p.noneItems)}</T>
             <T fontSize="11" fill="#C4785A"               x="718" y="397" textAnchor="start">items</T>
 
