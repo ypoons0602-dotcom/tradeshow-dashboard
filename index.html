@@ -254,31 +254,49 @@ const STORES = {
   s3: { name: "Eastgate Store", sco: 3 },
 };
 
+// ── PERIODS: all numbers designed around clean ratios ──────────────
+// flagged rate:  Q1=3%  Q2=4%  Q3=5%  Q4=4%
+// response split: staff 50% / customer 30% / none 20%  (of flagged)
+// items per tx: 3 (flat)
+// revenue: ~$15 per recovered incident
 const PERIODS = {
-  q1: { label: "Jan 1 – Mar 31, 2025 · Q1 2025", short: "Q1 2025",
-        total: 113840, normal: 110185, normalItems: 418703, flag: 3655, flagItems: 10840,
-        staff: 1758, staffItems: 5210, cust: 1166, custItems: 3470,
-        none: 731, noneItems: 2160, rec: "$42,680", risk: "$10,672", recTxns: 2924, recItems: 8680,
-        qtlySales: 1656000 },
-  q2: { label: "Apr 1 – Jun 30, 2025 · Q2 2025", short: "Q2 2025",
-        total: 118400, normal: 114460, normalItems: 434948, flag: 3940, flagItems: 11820,
-        staff: 1930, staffItems: 5740, cust: 1240, custItems: 3680,
-        none: 770, noneItems: 2400, rec: "$46,200", risk: "$11,340", recTxns: 3170, recItems: 9420,
-        qtlySales: 1728000 },
-  q3: { label: "Jul 1 – Sep 30, 2025 · Q3 2025", short: "Q3 2025",
-        total: 121600, normal: 117540, normalItems: 446652, flag: 4060, flagItems: 12180,
-        staff: 1980, staffItems: 5900, cust: 1310, custItems: 3890,
-        none: 770, noneItems: 2390, rec: "$48,720", risk: "$11,550", recTxns: 3290, recItems: 9790,
-        qtlySales: 1809000 },
-  q4: { label: "Oct 1 – Dec 31, 2025 · Q4 2025", short: "Q4 2025",
-        total: 109200, normal: 105540, normalItems: 401052, flag: 3660, flagItems: 10980,
-        staff: 1740, staffItems: 5180, cust: 1160, custItems: 3440,
-        none: 760, noneItems: 2360, rec: "$41,280", risk: "$10,830", recTxns: 2900, recItems: 8620,
-        qtlySales: 1584000 },
+  q1: {
+    label: "Jan 1 – Mar 31, 2025 · Q1 2025", short: "Q1 2025",
+    total: 120000, normal: 116400, normalItems: 349200, flag: 3600,  flagItems: 10800,
+    staff: 1800,  staffItems: 5400,  cust: 1080, custItems: 3240,
+    none: 720,   noneItems: 2160,
+    rec: "$43,200", risk: "$10,800", recTxns: 2880, recItems: 8640,
+    qtlySales: 1620000,
+  },
+  q2: {
+    label: "Apr 1 – Jun 30, 2025 · Q2 2025", short: "Q2 2025",
+    total: 120000, normal: 115200, normalItems: 345600, flag: 4800,  flagItems: 14400,
+    staff: 2400,  staffItems: 7200,  cust: 1440, custItems: 4320,
+    none: 960,   noneItems: 2880,
+    rec: "$57,600", risk: "$14,400", recTxns: 3840, recItems: 11520,
+    qtlySales: 1728000,
+  },
+  q3: {
+    label: "Jul 1 – Sep 30, 2025 · Q3 2025", short: "Q3 2025",
+    total: 125000, normal: 118750, normalItems: 356250, flag: 6250,  flagItems: 18750,
+    staff: 3125,  staffItems: 9375,  cust: 1875, custItems: 5625,
+    none: 1250,  noneItems: 3750,
+    rec: "$75,000", risk: "$18,750", recTxns: 5000, recItems: 15000,
+    qtlySales: 1875000,
+  },
+  q4: {
+    label: "Oct 1 – Dec 31, 2025 · Q4 2025", short: "Q4 2025",
+    total: 110000, normal: 105600, normalItems: 316800, flag: 4400,  flagItems: 13200,
+    staff: 2200,  staffItems: 6600,  cust: 1320, custItems: 3960,
+    none: 880,   noneItems: 2640,
+    rec: "$52,800", risk: "$13,200", recTxns: 3520, recItems: 10560,
+    qtlySales: 1584000,
+  },
 };
 
 const fmt = n => n.toLocaleString();
-const pct = (a, b) => (a / b * 100).toFixed(1) + "%";
+// pct: round to nearest whole number, no decimal
+const pct = (a, b) => Math.round(a / b * 100) + "%";
 const T = ({ children, ...p }) => (
   <text fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" {...p}>{children}</text>
 );
@@ -562,7 +580,7 @@ function TxModal({ mode, periodKey, period, onClose }) {
   const barcodeInNormalTxns = normalTxns.length;
   const totalWithBarcode    = barcodeInSwitchTxns + barcodeInNormalTxns;
   const flagRate = totalWithBarcode > 0
-    ? ((barcodeInSwitchTxns / totalWithBarcode) * 100).toFixed(1) + "%"
+    ? Math.round(barcodeInSwitchTxns / totalWithBarcode * 100) + "%"
     : "—";
 
   const actionColor = {
@@ -899,7 +917,7 @@ function Dashboard() {
             <path d="M96 314 C126 314 126 332 156 332 L156 406 C126 406 126 388 96 388 Z"
                   fill="#ECEAE4" stroke="#D3D1C7" strokeWidth="0.5"/>
 
-            {/* flow1 labels — "trans." used here (flow labels) */}
+            {/* flow1 labels */}
             <rect x="104" y="157" width="44" height="50" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#A32D2D" x="126" y="166" textAnchor="middle">{pct(p.flag, p.total)}</T>
             <T fontSize="9"  fill="#A32D2D"               x="126" y="178" textAnchor="middle">trans.</T>
@@ -943,7 +961,7 @@ function Dashboard() {
             <path d={sankeyPath(326, s2_custT,  s2_custB,  386, 222, 312)} fill="#E1F5EE" stroke="#1D9E75" strokeWidth="1.5"/>
             <path d={sankeyPath(326, s2_noneT,  s2_noneB,  386, 322, 406)} fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
 
-            {/* flow2 labels — "trans." used here (flow labels) */}
+            {/* flow2 labels */}
             <rect x="334" y={((s2_staffT+s2_staffB)/2 + 143)/2 - 25} width="44" height="52" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#854F0B" x="356" y={((s2_staffT+s2_staffB)/2 + 143)/2 - 16} textAnchor="middle">{pStaff}</T>
             <T fontSize="9"  fill="#854F0B"               x="356" y={((s2_staffT+s2_staffB)/2 + 143)/2 - 4}  textAnchor="middle">trans.</T>
@@ -997,7 +1015,7 @@ function Dashboard() {
             <path d={sankeyPath(556, 76, 312, 616, 94,  276)} fill="#EAF3DE" stroke="#97C459" strokeWidth="1.5"/>
             <path d={sankeyPath(556, 322, 406, 616, 288, 406)} fill="#FCEBEB" stroke="#E24B4A" strokeWidth="1.5"/>
 
-            {/* flow3 labels — "trans." used here (flow labels) */}
+            {/* flow3 labels */}
             <rect x="564" y="178" width="44" height="52" rx="3" fill="#f5f4f0" opacity="0.85"/>
             <T fontSize="10" fontWeight="500" fill="#3B6D11" x="586" y="187" textAnchor="middle">{pct(p.staff+p.cust, p.flag)}</T>
             <T fontSize="9"  fill="#3B6D11"               x="586" y="199" textAnchor="middle">trans.</T>
